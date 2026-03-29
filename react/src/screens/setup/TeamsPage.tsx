@@ -78,12 +78,17 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
         const atMax = team.players.length >= maxPlayers;
 
         return (
-          <div key={i} style={{ border: `${t.borderWidth}px solid ${color}`, borderRadius: t.radiusLg, overflow: "hidden" }}>
-            {/* Coloured header */}
+          <div key={i} style={{
+            border: `${t.borderWidth}px solid ${t.border}`,
+            borderRadius: t.radius, overflow: "hidden",
+            background: t.card,
+          }}>
+            
             <button
               onClick={() => setOpenPicker(pickerOpen ? null : i)}
               style={{
-                width: "100%", background: color,
+                width: "100%",
+                background: color,
                 padding: "10px 14px", border: "none", borderRadius: 0, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 8,
               }}
@@ -95,20 +100,24 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
                 onClick={e => e.stopPropagation()}
                 style={{
                   flex: 1, background: "transparent", border: "none",
-                  fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: "#fff",
+                  fontFamily: t.fontDisplay, fontSize: 15, fontWeight: 600, color: "#fff",
                   cursor: "text", outline: "none",
+                  textTransform: "uppercase", letterSpacing: 0.8,
                 }}
               />
-              <span style={{ fontFamily: t.font, fontSize: 10, fontWeight: 700, color: "#fff", letterSpacing: 1.5, textTransform: "uppercase" }}>
+              <span style={{
+                fontFamily: t.font, fontSize: 10, fontWeight: 700,
+                color: "rgba(255,255,255,0.7)", letterSpacing: 1.5, textTransform: "uppercase",
+              }}>
                 Team {i + 1}
               </span>
             </button>
 
-            <div style={{ background: t.card, padding: t.cardPadding }}>
+            <div style={{ padding: t.cardPadding }}>
               {/* Icon picker */}
               {pickerOpen && (
                 <div style={{
-                  display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10,
+                  display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12,
                   padding: "10px 0",
                   borderBottom: `${t.borderWidth}px solid ${t.border}`,
                 }}>
@@ -119,11 +128,13 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
                         key={key}
                         onClick={() => { update(i, { logo: key }); setOpenPicker(null); }}
                         style={{
-                          width: 40, height: 40, borderRadius: 10,
-                          background: selected ? color + "22" : t.cardAlt,
+                          width: 40, height: 40, borderRadius: t.radius,
+                          background: selected ? color + "22" : t.bgAlt,
                           border: selected ? `2px solid ${color}` : `2px solid transparent`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                           cursor: "pointer", padding: 0,
+                          boxShadow: selected ? `0 0 8px ${color}33` : "none",
+                          transition: t.transition,
                         }}
                       >
                         {img
@@ -137,10 +148,11 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
               )}
 
               {/* Players */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: 8, marginBottom: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: 8, marginBottom: 12 }}>
                 {team.players.map((p, pi) => (
                   <div key={pi} style={{
-                    background: t.cardAlt, borderRadius: t.radius,
+                    background: t.bgAlt, borderRadius: t.radius,
+                    border: `${t.borderWidth}px solid ${t.border}`,
                     padding: "8px 10px", fontSize: 13, color: t.textDim,
                     fontFamily: t.fontSans, display: "flex", alignItems: "center",
                     justifyContent: "space-between", gap: 4,
@@ -173,11 +185,12 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
                         if (addingPlayer.value.trim()) addPlayer(i, addingPlayer.value);
                         setAddingPlayer(null);
                       }}
-                      placeholder="Name…"
+                      placeholder="Name..."
                       style={{
-                        background: t.card, border: `${t.borderWidth}px solid ${color}`,
+                        background: t.bgAlt, border: `${t.borderWidth}px solid ${t.primary}`,
                         borderRadius: t.radius, padding: "8px 10px",
                         fontSize: 13, color: t.text, fontFamily: t.fontSans, outline: "none",
+                        boxShadow: `0 0 6px ${t.primary}22`,
                       }}
                     />
                   </form>
@@ -185,7 +198,7 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
                   <button
                     onClick={() => setAddingPlayer({ idx: i, value: "" })}
                     style={{
-                      background: "none", border: `${t.borderWidth}px dashed ${t.border}`,
+                      background: "none", border: `${t.borderWidth}px dashed ${t.borderBright}`,
                       borderRadius: t.radius, padding: "8px 10px",
                       fontSize: 13, color: t.textMuted, fontFamily: t.fontSans,
                       cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
@@ -205,10 +218,14 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
                       key={c}
                       onClick={() => update(i, { color: c })}
                       style={{
-                        width: 24, height: 24, borderRadius: "50%",
-                        background: c, border: selected ? `3px solid ${t.text}` : `2px solid transparent`,
-                        cursor: "pointer", outline: selected ? `2px solid ${c}` : "none",
+                        width: 24, height: 24, borderRadius: t.radius,
+                        background: c,
+                        border: selected ? `2px solid ${t.text}` : `2px solid transparent`,
+                        cursor: "pointer",
+                        outline: selected ? `2px solid ${c}` : "none",
                         outlineOffset: 1, padding: 0, flexShrink: 0,
+                        boxShadow: selected ? `0 0 8px ${c}55` : "none",
+                        transition: t.transition,
                       }}
                     />
                   );

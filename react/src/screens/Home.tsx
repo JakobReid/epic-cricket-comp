@@ -1,15 +1,12 @@
-import { Plus, Clock, CheckCircle2, Radio } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useTheme } from "../ThemeContext";
 import { useMatchStore } from "../store/matchStore";
+import { StatusBadge } from "../components/Shared";
 import type { Match } from "../store/types";
 
 type MatchStatus = "live" | "upcoming" | "completed";
 
-const STATUS_META: Record<MatchStatus, { label: string; icon: typeof Radio; color: (t: any) => string }> = {
-  "live":      { label: "Live",      icon: Radio,        color: (t) => t.primary },
-  "upcoming":  { label: "Upcoming",  icon: Clock,        color: (t) => t.secondary },
-  "completed": { label: "Completed", icon: CheckCircle2, color: (t) => t.textMuted },
-};
+
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -46,12 +43,21 @@ function winner(m: Match): string | undefined {
   return topTeam ? `${topTeam.name} won` : undefined;
 }
 
+function winnerColor(m: Match): string | undefined {
+  if (m.status !== "completed") return undefined;
+  const ranked = [...m.innings].sort((a, b) => b.runs - a.runs);
+  const topTeam = m.teams.find(t => t.id === ranked[0]?.battingTeamId);
+  return topTeam?.color;
+}
+
 function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void }) {
   const t = useTheme();
   const status = match.status as MatchStatus;
-  const meta = STATUS_META[status];
-  const StatusIcon = meta.icon;
-  const statusColor = meta.color(t);
+  const isCompleted = status === "completed";
+
+  const team0Color = match.teams[0]?.color || t.primary;
+  const team1Color = match.teams[1]?.color || t.secondary;
+  const stripColor = team0Color;
 
   return (
     <button
@@ -60,64 +66,133 @@ function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void }) {
         width: "100%",
         background: t.card,
         border: `${t.borderWidth}px solid ${t.border}`,
-        borderRadius: t.radiusLg,
-        padding: `14px ${t.cardPadding}px`,
+        borderRadius: t.radius,
+        padding: 0,
         cursor: "pointer",
         textAlign: "left",
-        opacity: status === "completed" ? 0.85 : 1,
+        opacity: isCompleted ? 0.75 : 1,
         transition: t.transition,
+        display: "flex",
+        overflow: "hidden",
+        position: "relative",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor = t.borderBright;
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor = t.border;
       }}
     >
-      {/* Header row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 500, color: t.textMuted, fontFamily: t.fontSans }}>
-          {formatDate(match.createdAt)}
-        </span>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 4,
-          background: statusColor + "18", borderRadius: 4, padding: "3px 8px",
-        }}>
-          <StatusIcon size={10} color={statusColor} strokeWidth={2.5} />
-          <span style={{
-            fontSize: 10, fontWeight: 700, color: statusColor,
-            fontFamily: t.fontSans, letterSpacing: 0.5, textTransform: "uppercase",
-          }}>{meta.label}</span>
-        </div>
-      </div>
-
-      {/* Teams */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {match.teams.map((team) => {
-          const score = inningsScore(match, team.id);
-          return (
-            <div key={team.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: team.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: t.text, fontFamily: t.fontSans }}>{team.name}</span>
-              </div>
-              {score && (
-                <span style={{ fontSize: 13, fontWeight: 700, color: t.text, fontFamily: t.font, letterSpacing: 0.3 }}>
-                  {score}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        marginTop: 12, paddingTop: 10, borderTop: `1px solid ${t.border}`,
-      }}>
-        <span style={{ fontSize: 11, fontWeight: 500, color: t.textMuted, fontFamily: t.fontSans }}>
-          {formatOvers(match)}
-        </span>
-        {winner(match) && (
-          <span style={{ fontSize: 11, fontWeight: 700, color: t.textDim, fontFamily: t.fontSans }}>
-            {winner(match)}
+      {/* Card content */}
+      <div style={{ flex: 1, padding: "12px 14px" }}>
+        {/* Header row: date + status badge */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 500,
+              color: t.textMuted,
+              fontFamily: t.font,
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+            }}
+          >
+            {formatDate(match.createdAt)}
           </span>
-        )}
+          <StatusBadge status={status} />
+        </div>
+
+        {/* Team rows */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+          {match.teams.map((team) => {
+            const score = inningsScore(match, team.id);
+            return (
+              <div
+                key={team.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: team.color,
+                      flexShrink: 0,
+                      boxShadow: `0 0 4px ${team.color}60`,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: t.text,
+                      fontFamily: t.fontSans,
+                    }}
+                  >
+                    {team.name}
+                  </span>
+                </div>
+                {score && (
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: t.text,
+                      fontFamily: t.font,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {score}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 10,
+            paddingTop: 8,
+            borderTop: `1px solid ${t.border}`,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 500,
+              color: t.textMuted,
+              fontFamily: t.font,
+              letterSpacing: 0.3,
+              textTransform: "uppercase",
+            }}
+          >
+            {formatOvers(match)}
+          </span>
+          {winner(match) && (
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: winnerColor(match) || t.accent,
+                fontFamily: t.fontSans,
+                letterSpacing: 0.3,
+                textTransform: "uppercase",
+              }}
+            >
+              {winner(match)}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   );
@@ -134,26 +209,55 @@ export function Home({ onCreateMatch, onOpenMatch }: { onCreateMatch: () => void
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 40px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: t.text, fontFamily: t.fontSans, letterSpacing: -0.3 }}>
-          Matches
+      {/* Page title */}
+      <div style={{ marginBottom: 20 }}>
+        <h1
+          style={{
+            fontSize: 28,
+            fontWeight: 700,
+            color: t.text,
+            fontFamily: t.fontDisplay,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            margin: 0,
+            lineHeight: 1,
+          }}
+        >
+          MATCHES
         </h1>
       </div>
 
-      <button onClick={onCreateMatch} style={{
-        width: "100%",
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        background: t.primary, color: "#fff",
-        border: "none", borderRadius: t.radiusLg,
-        padding: "14px 20px", marginBottom: 24,
-        fontSize: 14, fontWeight: 700, fontFamily: t.fontSans,
-        cursor: "pointer", transition: t.transition, letterSpacing: 0.2,
-      }}>
-        <Plus size={16} strokeWidth={2.5} />
+      {/* New Match button */}
+      <button
+        onClick={onCreateMatch}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          background: t.primary,
+          color: "#fff",
+          border: "none",
+          borderRadius: t.btnRadius,
+          height: t.btnHeight,
+          padding: "0 20px",
+          marginBottom: 24,
+          fontSize: 15,
+          fontWeight: 700,
+          fontFamily: t.fontDisplay,
+          cursor: "pointer",
+          transition: t.transition,
+          letterSpacing: 1.2,
+          textTransform: "uppercase",
+        }}
+      >
+        <Plus size={18} strokeWidth={2.5} />
         New Match
       </button>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* Match list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {matches.map((match) => (
           <MatchCard key={match.id} match={match} onOpen={() => handleOpen(match.id)} />
         ))}

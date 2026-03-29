@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { ChevronLeft, Radio } from "lucide-react";
+import { BarChart2, ChevronLeft } from "lucide-react";
 import { useTheme } from "../ThemeContext";
 import { useMatchStore } from "../store/matchStore";
+import { NavBar, EccBrand } from "../components/NavBar";
+import { StatusBadge } from "../components/Shared";
 import { LiveScoring } from "./scoring/LiveScoring";
 import { Scorecard } from "./Scorecard";
 import { MatchConfig } from "./MatchConfig";
 import { TeamLogo } from "./setup/TeamsPage";
+import batLineal from "../assets/criquet-icons/bat-lineal.png";
+import ballLineal from "../assets/criquet-icons/ball-lineal.png";
 
 type MatchView = "live" | "scorecard" | "config";
 
@@ -64,178 +68,117 @@ export function MatchPage({ matchId, onBack }: { matchId: string; onBack: () => 
   };
 
   return (
-    <div>
+    <div style={{ background: t.bg, minHeight: "100vh" }}>
 
+      {/* ── Live view nav ── */}
       {isLive && view === "live" && (
-        <div style={{ background: t.bg, padding: "8px 14px 0 2px", display: "flex", alignItems: "center" }}>
-          {/* Left: Exit button */}
-          <button onClick={onBack} style={{ ...iconBtn, padding: "12px 8px", gap: 5, flexShrink: 0 }}>
-            <ChevronLeft size={18} strokeWidth={2} color={t.textMuted} />
-            <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 700, color: t.textMuted }}>Exit</span>
-          </button>
+        <div style={{ position: "sticky", top: 0, zIndex: 100 }}>
+          <div style={{
+            background: t.card, padding: "12px 14px", minHeight: 65,
+            borderBottom: `1px solid ${t.border}`,
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <button onClick={onBack} style={{ ...iconBtn, padding: 2, flexShrink: 0 }}>
+              <ChevronLeft size={18} color={t.textMuted} strokeWidth={2.5} />
+            </button>
+            <EccBrand onHome={onBack} />
 
-          {/* Center: single row — status · format · leading · next up */}
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "8px 0", flexWrap: "wrap" }}>
-            {/* Status */}
-            <span style={{
-              fontFamily: t.fontSans, fontSize: 12, fontWeight: 800,
-              color: "#fff", background: "rgba(210,20,20,0.85)",
-              borderRadius: 4, padding: "3px 8px 3px 6px", letterSpacing: 1.2,
-              textTransform: "uppercase", display: "flex", alignItems: "center", gap: 5,
-            }}>
-              <Radio size={11} color="#fff" />
-              Live
-            </span>
-            {/* Format */}
-            <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: t.text, whiteSpace: "nowrap" }}>
-              {match.format.name}
-            </span>
-            {/* Leading */}
-            {leadingInnings && leadingTeam && (
-              <>
-                <span style={{ color: t.border, fontSize: 14, lineHeight: 1, borderLeft: `1.5px solid ${t.border}`, height: 14, display: "inline-block" }} />
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontFamily: t.font, fontSize: 10, color: t.textMuted, whiteSpace: "nowrap", letterSpacing: 1 }}>LEADING:</span>
-                  <TeamLogo logoKey={leadingTeam.logo ?? "shield"} color={leadingTeam.color ?? t.textMuted} size={13} />
-                  <span style={{ fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text, whiteSpace: "nowrap" }}>{leadingTeam.name}</span>
-                  <span style={{ fontFamily: t.font, fontSize: 15, fontWeight: 800, color: leadingTeam.color ?? t.text, whiteSpace: "nowrap" }}>{leadingInnings.wickets}/{leadingInnings.runs}</span>
-                </div>
-              </>
-            )}
-            {/* Next up */}
-            {(nextBattingInnings || nextBowlingTurn) && (
-              <>
-                <span style={{ color: t.border, fontSize: 14, lineHeight: 1, borderLeft: `1.5px solid ${t.border}`, height: 14, display: "inline-block" }} />
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
-                  {nextBattingInnings && (() => {
-                    const nextBattingTeam = match.teams.find(tm => tm.id === nextBattingInnings.battingTeamId);
-                    return (
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontFamily: t.font, fontSize: 10, color: t.textMuted, whiteSpace: "nowrap" }}>NEXT BAT:</span>
-                        <TeamLogo logoKey={nextBattingTeam?.logo ?? "shield"} color={nextBattingTeam?.color ?? t.textMuted} size={11} />
-                        <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 600, color: t.text, whiteSpace: "nowrap" }}>{nextBattingInnings.battingTeamName}</span>
-                      </div>
-                    );
-                  })()}
-                  {nextBowlingTurn && (() => {
-                    const nextBowlingTeam = match.teams.find(tm => tm.id === nextBowlingTurn.teamId);
-                    return (
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontFamily: t.font, fontSize: 10, color: t.textMuted, whiteSpace: "nowrap" }}>NEXT BOWL:</span>
-                        <TeamLogo logoKey={nextBowlingTeam?.logo ?? "shield"} color={nextBowlingTeam?.color ?? t.textMuted} size={11} />
-                        <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 600, color: t.text, whiteSpace: "nowrap" }}>{nextBowlingTurn.teamName}</span>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Right spacer to balance exit button */}
-          <div style={{ width: 68, flexShrink: 0 }} />
-        </div>
-      )}
-
-      {view === "config" && (
-        <div style={{
-          background: t.bg, borderBottom: `${t.borderWidth}px solid ${t.border}`,
-          padding: "0 14px 0 2px", display: "flex", alignItems: "center", gap: 6,
-        }}>
-          <button onClick={() => setView("live")} style={{ ...iconBtn, padding: "12px 8px" }}>
-            <ChevronLeft size={18} color={t.textMuted} strokeWidth={2} />
-          </button>
-          <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: t.text }}>Match Settings</span>
-        </div>
-      )}
-
-      {isLive && view === "scorecard" && (
-        // Broadcast-style summary header — back goes to live
-        <div style={{ display: "flex" }}>
-          {/* Batting side */}
-          <div style={{ flex: 1, background: color, display: "flex", alignItems: "center", padding: "12px 12px 12px 2px", gap: 8 }}>
-            <button onClick={() => setView("live")} style={{ ...iconBtn, padding: "4px 4px 4px 8px", gap: 8, flexShrink: 0 }}>
-              <ChevronLeft size={20} color="rgba(255,255,255,0.85)" strokeWidth={2} />
-              <span style={{
-                fontFamily: t.fontSans, fontSize: 10, fontWeight: 800,
-                color: "#fff", background: "rgba(210,20,20,0.85)",
-                border: "1.5px solid rgba(255,255,255,0.6)",
-                borderRadius: 4, padding: "3px 7px 3px 5px", letterSpacing: 1.2,
-                textTransform: "uppercase", display: "flex", alignItems: "center", gap: 4,
-              }}>
-                <Radio size={9} color="#fff" />
-                Live
-              </span>
-              <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 700, color: "#fff", whiteSpace: "nowrap" }}>
+            {/* Center: info panel */}
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+              <StatusBadge status="live" />
+              <span style={{ fontFamily: t.fontDisplay, fontSize: 12, fontWeight: 500, color: t.textDim, whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: 0.5 }}>
                 {match.format.name}
               </span>
-            </button>
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {innings.battingTeamName}
-                </span>
-                <TeamLogo logoKey={battingTeam?.logo ?? "shield"} color="rgba(255,255,255,0.9)" size={15} />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontFamily: t.font, fontSize: 13, fontWeight: 700, color: "#fff" }}>
-                  {innings.wickets}/{innings.runs}
-                </span>
-                <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>·</span>
-                <span style={{ fontFamily: t.font, fontSize: 12, color: "rgba(255,255,255,0.85)" }}>
-                  {innings.completedOvers}.{innings.ballsInCurrentOver}/{match.format.overs} ov
-                </span>
-              </div>
-              {nextBattingInnings && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 5, marginTop: 4 }}>
-                  <span style={{ fontFamily: t.font, fontSize: 10, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: 1 }}>Next bat</span>
-                  <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{nextBattingInnings.battingTeamName}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          {/* Bowling side */}
-          <div style={{ flex: 1, background: bowlingColor, display: "flex", flexDirection: "column", justifyContent: "center", padding: "12px 16px 12px 12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-              <TeamLogo logoKey={bowlingTeam?.logo ?? "star"} color="rgba(255,255,255,0.9)" size={15} />
-              <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {bowlingTeam?.name ?? "—"}
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              {bowlingTeamStats && (
+              {leadingInnings && leadingTeam && (
                 <>
-                  <span style={{ fontFamily: t.font, fontSize: 13, fontWeight: 700, color: "#fff" }}>
-                    {bowlingTeamStats.wickets}/{bowlingTeamStats.runs}
-                  </span>
-                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>·</span>
+                  <span style={{ width: 1, height: 14, background: t.border, display: "inline-block" }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontFamily: t.font, fontSize: 9, color: t.textMuted, whiteSpace: "nowrap", letterSpacing: 1.5, textTransform: "uppercase" }}>LEAD</span>
+                    <TeamLogo logoKey={leadingTeam.logo ?? "shield"} color={leadingTeam.color ?? t.textMuted} size={11} />
+                    <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 700, color: t.text, whiteSpace: "nowrap" }}>{leadingTeam.name}</span>
+                    <span style={{ fontFamily: t.font, fontSize: 13, fontWeight: 800, color: leadingTeam.color ?? t.primary, whiteSpace: "nowrap" }}>{leadingInnings.wickets}/{leadingInnings.runs}</span>
+                  </div>
                 </>
               )}
-              <span style={{ fontFamily: t.font, fontSize: 12, color: "rgba(255,255,255,0.85)" }}>
-                {bowlerCompletedOvers}.{innings.ballsInCurrentOver}/{bowlerTotalOvers} ov
-              </span>
             </div>
-            {nextBowlingTurn && (
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
-                <span style={{ fontFamily: t.font, fontSize: 10, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: 1 }}>Next bowl</span>
-                <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{nextBowlingTurn.teamName}</span>
-              </div>
-            )}
+
+            <button
+              title="Scorecard"
+              onClick={() => setView("scorecard")}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                background: t.primary, border: "none", borderRadius: t.btnRadius,
+                padding: "6px 12px", cursor: "pointer", flexShrink: 0,
+                fontFamily: t.fontDisplay, fontSize: 11, fontWeight: 600,
+                color: "#fff", textTransform: "uppercase", letterSpacing: 1,
+              }}
+            >
+              <BarChart2 size={13} color="#fff" />
+              Score
+            </button>
           </div>
         </div>
       )}
 
-      {!isLive && (
-        // Plain header for completed / upcoming
-        <div style={{
-          background: t.bg, borderBottom: `${t.borderWidth}px solid ${t.border}`,
-          padding: "0 14px 0 2px", display: "flex", alignItems: "center", gap: 6,
-        }}>
-          <button onClick={onBack} style={{ ...iconBtn, padding: "12px 8px" }}>
-            <ChevronLeft size={18} color={t.textMuted} strokeWidth={2} />
+      {/* ── Config view nav ── */}
+      {view === "config" && (
+        <NavBar onHome={onBack}>
+          <button onClick={() => setView("live")} style={{ ...iconBtn, padding: 4 }}>
+            <ChevronLeft size={16} color={t.textMuted} strokeWidth={2.5} />
           </button>
-          <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: t.text }}>{match.name}</span>
+          <span style={{ fontFamily: t.fontDisplay, fontSize: 13, fontWeight: 500, color: t.text, textTransform: "uppercase", letterSpacing: 0.8 }}>Match Settings</span>
+        </NavBar>
+      )}
+
+      {/* ── Scorecard nav (during live match) — split team-color header ── */}
+      {isLive && view === "scorecard" && (
+        <div style={{ position: "sticky", top: 0, zIndex: 100 }}>
+          <div style={{ display: "flex", borderBottom: `1px solid ${t.border}` }}>
+            {/* Batting side */}
+            {/* Batting side — right-aligned, icon near centre */}
+            <div style={{
+              flex: 1, background: color,
+              display: "flex", alignItems: "center", padding: "12px 14px", minHeight: 65, gap: 10,
+            }}>
+              <button onClick={() => setView("live")} style={{ ...iconBtn, padding: 2, flexShrink: 0 }}>
+                <ChevronLeft size={18} color="rgba(255,255,255,0.9)" strokeWidth={2.5} />
+              </button>
+              <EccBrand onHome={onBack} color="rgba(255,255,255,0.9)" />
+              <StatusBadge status="live" />
+              <div style={{ flex: 1, textAlign: "right" }}>
+                <div style={{ fontFamily: t.fontDisplay, fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: 1 }}>
+                  {innings.battingTeamName}
+                </div>
+                <div style={{ fontFamily: t.font, fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>
+                  {innings.completedOvers}.{innings.ballsInCurrentOver}/{match.format.overs} ov · {innings.wickets}/{innings.runs}
+                </div>
+              </div>
+              <TeamLogo logoKey={battingTeam?.logo ?? "shield"} color="rgba(255,255,255,0.9)" size={18} />
+            </div>
+            {/* Bowling side */}
+            <div style={{
+              flex: 1, background: bowlingColor,
+              display: "flex", alignItems: "center", padding: "12px 14px", minHeight: 65, gap: 10,
+            }}>
+              <TeamLogo logoKey={bowlingTeam?.logo ?? "star"} color="rgba(255,255,255,0.9)" size={18} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: t.fontDisplay, fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: 1 }}>
+                  {bowlingTeam?.name ?? "—"}
+                </div>
+                <div style={{ fontFamily: t.font, fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>
+                  {bowlingTeamStats ? `${bowlingTeamStats.wickets}/${bowlingTeamStats.runs} · ` : ""}{bowlerCompletedOvers}.{innings.ballsInCurrentOver}/{bowlerTotalOvers} ov
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* ── Completed/upcoming match nav ── */}
+      {!isLive && view !== "config" && (
+        <NavBar onHome={onBack}>
+          <span style={{ fontFamily: t.fontDisplay, fontSize: 13, fontWeight: 500, color: t.text, textTransform: "uppercase", letterSpacing: 0.8 }}>{match.name}</span>
+        </NavBar>
       )}
 
       {view === "live"      && <LiveScoring matchId={matchId} onScorecard={() => setView("scorecard")} onEndMatch={handleEndMatch} onSettings={() => setView("config")} />}

@@ -59,6 +59,7 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
         const opb = bowlers.length > 0 ? oversPerBowler(bowlers) : 0;
         const extra = bowlers.length > 0 ? extraOvers(bowlers) : 0;
         const isOuterTarget = outerDragOver === inningsIdx && outerDragIdx.current !== inningsIdx;
+        const teamColor = battingTeam.color ?? t.primary;
 
         return (
           <div
@@ -69,28 +70,42 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
             onDragEnd={onOuterDragEnd}
             onDragOver={e => e.preventDefault()}
             style={{
-              border: `${t.borderWidth}px solid ${isOuterTarget ? battingTeam.color ?? t.primary : battingTeam.color ?? t.border}`,
-              borderRadius: t.radiusLg, overflow: "hidden",
+              border: `${t.borderWidth}px solid ${isOuterTarget ? teamColor : t.border}`,
+              borderRadius: t.radius, overflow: "hidden",
               opacity: outerDragIdx.current === inningsIdx ? 0.4 : 1,
               transition: t.transition,
+              boxShadow: isOuterTarget ? `0 0 12px ${teamColor}33` : "none",
             }}
           >
+            
             <div style={{
-              background: battingTeam.color ?? t.primary, padding: "10px 14px",
+              background: teamColor,
+              padding: "10px 14px",
               display: "flex", alignItems: "center", gap: 8,
               cursor: "grab", userSelect: "none",
             }}>
-              <div style={{ fontFamily: t.font, fontSize: 10, fontWeight: 700, color: "#fff", letterSpacing: 1.5, textTransform: "uppercase", marginRight: 4 }}>
-                Innings {inningsIdx + 1}
+              <div style={{
+                fontFamily: t.fontDisplay, fontSize: 11, fontWeight: 600,
+                color: "rgba(255,255,255,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginRight: 4,
+              }}>
+                INN {inningsIdx + 1}
               </div>
               <TeamLogo logoKey={battingTeam.logo} color="rgba(255,255,255,0.85)" size={13} />
-              <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: "#fff", flex: 1 }}>
+              <span style={{
+                fontFamily: t.fontDisplay, fontSize: 15, fontWeight: 600,
+                color: "#fff", flex: 1, textTransform: "uppercase", letterSpacing: 0.5,
+              }}>
                 {battingTeam.name}
               </span>
-              <span style={{ fontFamily: t.font, fontSize: 11, color: "#fff", marginRight: 6 }}>batting</span>
-              <GripVertical size={16} color="rgba(255,255,255,0.7)" />
+              <span style={{
+                fontFamily: t.font, fontSize: 10, fontWeight: 700,
+                color: "rgba(255,255,255,0.6)", letterSpacing: 1, textTransform: "uppercase",
+                background: "rgba(0,0,0,0.2)", padding: "2px 8px", borderRadius: t.radius,
+              }}>BAT</span>
+              <GripVertical size={16} color="rgba(255,255,255,0.5)" />
             </div>
 
+            {/* Bowling order rows */}
             <div style={{ background: t.card }}>
               {bowlers.map((bowler, bowlerIdx) => {
                 const teamOvers = opb + (bowlerIdx < extra ? 1 : 0);
@@ -98,6 +113,7 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
                 for (let j = 0; j < bowlerIdx; j++) startOv += opb + (j < extra ? 1 : 0);
                 const endOv = startOv + teamOvers - 1;
                 const isInnerTarget = innerDragOver?.innings === battingTeam.name && innerDragOver?.idx === bowlerIdx && innerDragIdx.current !== bowlerIdx;
+                const bowlerColor = bowler.color ?? t.textMuted;
 
                 return (
                   <div
@@ -108,10 +124,11 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
                     onDragEnd={e => { e.stopPropagation(); onInnerDragEnd(battingTeam.name); }}
                     onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
                     style={{
-                      borderTop: `${t.borderWidth}px solid ${isInnerTarget ? bowler.color ?? t.primary : t.border}`,
+                      borderTop: `${t.borderWidth}px solid ${isInnerTarget ? bowlerColor : t.border}`,
                       padding: "10px 14px",
                       display: "flex", alignItems: "center", gap: 10,
-                      background: t.card,
+                      background: bowlerIdx % 2 === 0 ? t.card : t.bgAlt,
+                      borderLeft: `3px solid ${bowlerColor}`,
                       opacity: innerDragIdx.current === bowlerIdx && innerDragOver?.innings === battingTeam.name ? 0.4 : 1,
                       cursor: "grab", userSelect: "none",
                       transition: t.transition,
@@ -119,19 +136,20 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
                   >
                     <div style={{
                       width: 22, height: 22, borderRadius: t.radius,
-                      background: bowler.color ? bowler.color + "22" : t.cardAlt,
+                      background: bowlerColor + "18",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontFamily: t.font, fontSize: 11, fontWeight: 700,
-                      color: bowler.color ?? t.textMuted, flexShrink: 0,
+                      color: bowlerColor, flexShrink: 0,
                     }}>{bowlerIdx + 1}</div>
-                    <TeamLogo logoKey={bowler.logo} color={bowler.color ?? t.textMuted} size={13} />
-                    <span style={{ fontFamily: t.fontSans, fontSize: 13, color: t.text, flex: 1 }}>{bowler.name}</span>
+                    <TeamLogo logoKey={bowler.logo} color={bowlerColor} size={13} />
+                    <span style={{ fontFamily: t.fontSans, fontSize: 13, fontWeight: 600, color: t.text, flex: 1 }}>{bowler.name}</span>
                     <div style={{
                       fontFamily: t.font, fontSize: 11, color: t.textDim,
-                      background: t.cardAlt, padding: "2px 7px",
+                      background: t.bgAlt, padding: "3px 8px",
                       borderRadius: t.radius, fontWeight: 700,
-                    }}>Ov {startOv}{endOv !== startOv ? `–${endOv}` : ""}</div>
-                    <GripVertical size={16} color={t.textMuted} />
+                      border: `1px solid ${t.border}`,
+                    }}>Ov {startOv}{endOv !== startOv ? `\u2013${endOv}` : ""}</div>
+                    <GripVertical size={14} color={t.textMuted} style={{ opacity: 0.5 }} />
                   </div>
                 );
               })}

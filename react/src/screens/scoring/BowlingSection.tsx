@@ -37,25 +37,36 @@ export const BowlingSection = ({
     : "—";
 
   return (
-    <div>
+    <div style={{ padding: "0 12px" }}>
       <div style={{
-        borderLeft: `${t.borderWidth}px solid ${color}`,
-        borderRight: `${t.borderWidth}px solid ${color}`,
-        borderBottom: `${t.borderWidth}px solid ${color}`,
+        background: t.card,
+        borderRadius: t.radiusLg,
         overflow: "hidden",
+        border: `1px solid ${color}`,
       }}>
         {/* Bowling team header */}
         <div style={{ background: color, padding: "8px 14px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontFamily: t.font, letterSpacing: 1.5, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 5 }}>
-              <img src={ballLineal} style={{ width: 12, height: 12, filter: "brightness(0) invert(1)", opacity: 0.7 }} /> Bowling
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{
+              fontFamily: t.fontDisplay, fontSize: 10, color: "rgba(255,255,255,0.7)",
+              letterSpacing: 2, textTransform: "uppercase",
+              display: "flex", alignItems: "center", gap: 5,
+            }}>
+              <img src={ballLineal} style={{ width: 11, height: 11, filter: "brightness(0) invert(1)", opacity: 0.7 }} />
+              BOWLING
             </div>
-            <div style={{ fontFamily: t.font, fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>
-              Ov {completedOvers + 1}
+            <div style={{
+              fontFamily: t.font, fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: 600,
+            }}>
+              OV {completedOvers + 1}
             </div>
           </div>
-          <div style={{ fontSize: 13, color: "#fff", fontFamily: t.fontSans, fontWeight: 800, display: "flex", alignItems: "center", gap: 7 }}>
-            <TeamLogo logoKey={bowlingTeamLogo} color="rgba(255,255,255,0.85)" size={13} />
+          <div style={{
+            fontFamily: t.fontDisplay, fontSize: 14, fontWeight: 500, color: "#fff",
+            textTransform: "uppercase", letterSpacing: 0.8,
+            display: "flex", alignItems: "center", gap: 7,
+          }}>
+            <TeamLogo logoKey={bowlingTeamLogo} color="rgba(255,255,255,0.85)" size={14} />
             {bowlingTeamName}
           </div>
         </div>
@@ -63,57 +74,85 @@ export const BowlingSection = ({
         {/* Current bowler */}
         <div style={{
           background: t.card, padding: "10px 14px",
-          display: "flex", alignItems: "center", gap: 8,
-          borderTop: `${t.borderWidth}px solid ${color}`,
+          display: "flex", alignItems: "center", gap: 10,
+          borderBottom: `1px solid ${t.border}`,
         }}>
+          {/* Bowler dot + name + figures */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <div style={{
+                width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0,
+                boxShadow: `0 0 6px ${color}60`,
+              }} />
               <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 700, color: t.text }}>
                 {currentBowler?.name ?? "—"}
               </span>
             </div>
             {currentBowler && (
-              <div style={{ fontFamily: t.font, fontSize: 12, color: t.textMuted, marginTop: 1, marginLeft: 16 }}>
+              <div style={{
+                fontFamily: t.font, fontSize: 12, color: t.textDim, marginTop: 3, marginLeft: 14,
+                letterSpacing: 0.5,
+              }}>
                 {overs}-0-{currentBowler.runsConceded}-{currentBowler.wickets}
               </div>
             )}
           </div>
+          {/* Wickets + economy */}
           {currentBowler && (
             <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div>
-                <span style={{ fontFamily: t.font, fontWeight: 700, fontSize: 20, color: t.text }}>{currentBowler.wickets}</span>
-                <span style={{ fontFamily: t.font, fontSize: 13, color: t.text }}> wkts</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 3, justifyContent: "flex-end" }}>
+                <span style={{ fontFamily: t.font, fontWeight: 800, fontSize: 22, color: t.text, lineHeight: 1 }}>{currentBowler.wickets}</span>
+                <span style={{ fontFamily: t.font, fontSize: 12, color: t.textMuted }}>wkts</span>
               </div>
-              <div style={{ fontFamily: t.font, fontSize: 12, color: t.textMuted, marginTop: 1 }}>Econ {econ}</div>
+              <div style={{
+                fontFamily: t.font, fontSize: 11, color: t.textMuted, marginTop: 2,
+                display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3,
+              }}>
+                <span style={{ fontSize: 9, letterSpacing: 1, textTransform: "uppercase" }}>ECON</span>
+                <span style={{ color: t.textDim, fontWeight: 600 }}>{econ}</span>
+              </div>
             </div>
           )}
         </div>
 
         {/* Bowling rotation strip */}
-        <div style={{ display: "flex", borderTop: `${t.borderWidth}px solid ${color}` }}>
+        <div style={{ display: "flex" }}>
           {rotation.map((bt, i) => {
             const isNow = bt.status === "now";
             const isDone = bt.status === "done";
             const teamColor = bt.team?.color ?? t.textDim;
             return (
               <div key={bt.teamId} style={{
-                flex: 1, padding: "8px 6px",
-                background: isNow ? color : t.bg,
-                borderLeft: i > 0 ? `${t.borderWidth}px solid ${color}` : undefined,
-                textAlign: "center", opacity: isDone ? 0.6 : 1,
+                flex: 1, padding: "7px 6px",
+                background: isNow ? `${teamColor}18` : t.bg,
+                borderLeft: i > 0 ? `1px solid ${t.border}` : undefined,
+                textAlign: "center",
+                opacity: isDone ? 0.45 : 1,
+                position: "relative",
               }}>
+                {/* Active indicator bar */}
+                {isNow && (
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
+                    background: teamColor,
+                  }} />
+                )}
                 {bt.team && (
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: 3 }}>
-                    <TeamLogo logoKey={bt.team.logo} color={isNow ? "rgba(255,255,255,0.85)" : teamColor} size={12} />
+                    <TeamLogo logoKey={bt.team.logo} color={isNow ? teamColor : isDone ? t.textMuted : teamColor} size={11} />
                   </div>
                 )}
                 <div style={{
-                  fontFamily: t.fontSans, fontSize: 12, fontWeight: 700,
-                  color: isNow ? "#fff" : t.textDim,
+                  fontFamily: t.fontSans, fontSize: 11, fontWeight: 700,
+                  color: isNow ? t.text : isDone ? t.textMuted : t.textDim,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>{bt.teamName}</div>
-                <div style={{ fontFamily: t.font, fontSize: 11, color: isNow ? "rgba(255,255,255,0.7)" : t.textMuted, marginTop: 2, fontWeight: 600 }}>
+                <div style={{
+                  fontFamily: t.font, fontSize: 10,
+                  color: isNow ? teamColor : t.textMuted,
+                  marginTop: 2, fontWeight: 600,
+                  textTransform: "uppercase", letterSpacing: 0.5,
+                }}>
                   {isNow ? "bowling" : isDone ? "done" : `ov ${bt.fromOver}–${bt.toOver}`}
                 </div>
               </div>

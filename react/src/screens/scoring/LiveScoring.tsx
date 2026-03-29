@@ -17,7 +17,7 @@ interface Props {
 
 export const LiveScoring = ({ matchId, onScorecard, onEndMatch, onNextInnings, onSettings }: Props) => {
   const t = useTheme();
-  const { matches, recordDelivery, undoDelivery, nextInnings } = useMatchStore();
+  const { matches, recordDelivery, confirmOver, undoDelivery, nextInnings } = useMatchStore();
   const match = matches.find(m => m.id === matchId);
 
   if (!match) return null;
@@ -28,21 +28,46 @@ export const LiveScoring = ({ matchId, onScorecard, onEndMatch, onNextInnings, o
   // Between-innings / match-complete banner
   if (match.status === "completed" || !innings || innings.status === "upcoming") {
     const lastDone = [...match.innings].reverse().find(i => i.status === "complete");
+    const nextBattingTeam = innings ? match.teams.find(tm => tm.id === innings.battingTeamId) : null;
+    const nextColor = nextBattingTeam?.color ?? t.primary;
     return (
-      <div style={{ padding: 32, textAlign: "center", maxWidth: 640, margin: "0 auto" }}>
-        <div style={{ fontFamily: t.fontSans, fontSize: 18, fontWeight: 800, color: t.text, marginBottom: 8 }}>
-          {match.status === "completed" ? "Match Complete" : "Innings Complete"}
+      <div style={{ padding: "48px 24px", textAlign: "center", maxWidth: 640, margin: "0 auto" }}>
+        <div style={{
+          background: t.card,
+          border: `1px solid ${t.border}`,
+          borderRadius: t.radiusLg,
+          padding: "32px 24px",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          {/* Top accent line */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, height: 3,
+            background: match.status === "completed" ? t.primary : nextColor,
+          }} />
+          <div style={{
+            fontFamily: t.fontDisplay, fontSize: 22, fontWeight: 600, color: t.text,
+            textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12,
+          }}>
+            {match.status === "completed" ? "Match Complete" : "Innings Complete"}
+          </div>
+          {lastDone && (
+            <div style={{ fontFamily: t.font, fontSize: 15, color: t.textDim, marginBottom: 4 }}>
+              {lastDone.battingTeamName}: <span style={{ color: t.text, fontWeight: 700 }}>{lastDone.wickets}/{lastDone.runs}</span>
+              <span style={{ color: t.textMuted, marginLeft: 6 }}>({lastDone.completedOvers}.0 ov)</span>
+            </div>
+          )}
+          {match.status !== "completed" && (
+            <div style={{
+              marginTop: 16, fontFamily: t.fontSans, fontSize: 14, color: t.textMuted,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}>
+              <span style={{ fontFamily: t.font, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", color: t.textMuted }}>NEXT</span>
+              <span style={{ color: nextColor, fontWeight: 700 }}>{innings?.battingTeamName ?? "—"}</span>
+              <span>to bat</span>
+            </div>
+          )}
         </div>
-        {lastDone && (
-          <div style={{ fontFamily: t.font, fontSize: 15, color: t.textMuted }}>
-            {lastDone.battingTeamName}: {lastDone.wickets}/{lastDone.runs} ({lastDone.completedOvers}.0 ov)
-          </div>
-        )}
-        {match.status !== "completed" && (
-          <div style={{ marginTop: 16, fontFamily: t.fontSans, fontSize: 14, color: t.textMuted }}>
-            Next: {innings?.battingTeamName ?? "—"} to bat
-          </div>
-        )}
       </div>
     );
   }
@@ -82,6 +107,13 @@ export const LiveScoring = ({ matchId, onScorecard, onEndMatch, onNextInnings, o
     });
   };
 
+  const actionBtnStyle: React.CSSProperties = {
+    background: t.card,
+    border: `1px solid ${t.border}`,
+    borderRadius: 20, cursor: "pointer", padding: "5px 10px",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+  };
+
   return (
     <>
       <style>{`
@@ -101,25 +133,21 @@ export const LiveScoring = ({ matchId, onScorecard, onEndMatch, onNextInnings, o
         .live-scoring-content {
           display: flex;
           flex-direction: column;
-          gap: clamp(0px, calc(20vh - 146px), 24px);
+          gap: clamp(0px, calc(20vh - 146px), 16px);
         }
       `}</style>
       <div className="live-scoring">
         <div className="live-scoring-content">
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 6, paddingBottom: 8 }}>
+          {/* Action bar - dark pills */}
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 6, padding: "8px 12px 4px" }}>
             {[
-              { icon: <BarChart2 size={14} color={t.textMuted} />, onClick: onScorecard, title: "Scorecard" },
-              { icon: <Settings size={14} color={t.textMuted} />, onClick: onSettings, title: "Match settings" },
-              ...(hasNextInnings ? [{ icon: <FastForward size={14} color={t.textMuted} />, onClick: handleNextInnings, title: "Next innings" }] : []),
-              { icon: <Square size={14} color={t.danger} fill={t.danger} strokeWidth={0} />, onClick: onEndMatch, title: "End match" },
+              { icon: <Settings size={13} color={t.textDim} />, label: null, onClick: onSettings, title: "Match settings" },
+              ...(hasNextInnings ? [{ icon: <FastForward size={13} color={t.textDim} />, label: null, onClick: handleNextInnings, title: "Next innings" }] : []),
+              { icon: <Square size={12} color={t.danger} fill={t.danger} strokeWidth={0} />, label: null, onClick: onEndMatch, title: "End match" },
             ].map((btn, i) => (
-              <button key={i} onClick={btn.onClick} title={btn.title} style={{
-                background: t.cardAlt,
-                border: `${t.borderWidth}px solid ${t.border}`,
-                borderRadius: t.radius, cursor: "pointer", padding: "6px 8px",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
+              <button key={i} onClick={btn.onClick} title={btn.title} style={actionBtnStyle}>
                 {btn.icon}
+                {btn.label && <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 600, color: t.textDim }}>{btn.label}</span>}
               </button>
             ))}
           </div>
@@ -154,8 +182,11 @@ export const LiveScoring = ({ matchId, onScorecard, onEndMatch, onNextInnings, o
           onExtra={handleExtra}
           onDismissal={handleDismissal}
           onUndo={() => undoDelivery(matchId)}
+          onConfirmOver={() => confirmOver(matchId)}
+          onNextOver={() => confirmOver(matchId)}
+          overComplete={innings.ballsInCurrentOver >= match.format.ballsPerOver}
           fielders={fielders}
-          disabled={!isLive}
+          disabled={!isLive || innings.ballsInCurrentOver >= match.format.ballsPerOver}
         />
       </div>
     </>
