@@ -48,9 +48,9 @@ const LAYOUT = {
   borderWidth: 2,
 };
 
-// Epic Cricket — Outfield and leather. Cream pitch, deep county green, rich scarlet.
+// Epic Cricket Comp — broadcast light theme
 export const THEME: Theme = {
-  id: "epic-cricket",
+  id: "epic-cricket-comp",
   bg: "#fffdf5",
   card: "#ffffff",
   cardAlt: "#f7f5ec",
