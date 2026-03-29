@@ -3,9 +3,11 @@ import { createContext, useContext, type ReactNode } from "react";
 export type Theme = {
   id: string;
   bg: string;
+  bgAlt: string;
   card: string;
   cardAlt: string;
   border: string;
+  borderBright: string;
   text: string;
   textDim: string;
   textMuted: string;
@@ -17,9 +19,12 @@ export type Theme = {
   secondaryDim: string;
   danger: string;
   dangerDim: string;
+  accent: string;
+  accentDim: string;
   default: string;
   font: string;
   fontSans: string;
+  fontDisplay: string;
   radius: number;
   radiusLg: number;
   btnHeight: number;
@@ -34,43 +39,51 @@ export type Theme = {
 };
 
 const FONTS = {
-  font: `'Source Code Pro', 'Menlo', monospace`,
-  fontSans: `'Source Sans 3', 'Helvetica Neue', sans-serif`,
+  font: `'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace`,
+  fontSans: `'Barlow', 'Inter', 'Helvetica Neue', sans-serif`,
+  fontDisplay: `'Oswald', 'Barlow Condensed', 'Impact', sans-serif`,
 };
 
 const LAYOUT = {
-  radius: 8,
-  radiusLg: 14,
-  btnHeight: 54,
-  btnRadius: 10,
-  headingWeight: 700,
-  cardPadding: 16,
-  borderWidth: 2,
+  radius: 4,
+  radiusLg: 6,
+  btnHeight: 52,
+  btnRadius: 4,
+  headingWeight: 800,
+  cardPadding: 14,
+  borderWidth: 1,
 };
 
-// Epic Cricket Comp — broadcast light theme
+// ── Broadcast Light — clean, crisp daytime broadcast overlay ──
 export const THEME: Theme = {
-  id: "epic-cricket-comp",
-  bg: "#fffdf5",
+  id: "broadcast-light",
+  bg: "#f0f1f4",
+  bgAlt: "#e6e8ed",
   card: "#ffffff",
-  cardAlt: "#f7f5ec",
-  border: "#c4d4ae",
-  text: "#1a1c0e",
-  textDim: "#3e4e28",
-  textMuted: "#6e7e58",
-  primary: "#1e7230",
-  primaryLight: "#cce8d4",
-  primaryDim: "#165c24",
-  secondary: "#c41820",
-  secondaryLight: "#fcd4d6",
-  secondaryDim: "#a41018",
-  danger: "#c43030",
-  dangerDim: "#a82020",
-  default: "#2d3320",
-  headerBg: "#1e7230",
-  headerText: "#ffffff",
-  headerTextDim: "rgba(255,255,255,0.65)",
-  transition: "all 0.18s ease",
+  cardAlt: "#f5f6f8",
+  border: "#d4d8e0",
+  borderBright: "#bbc1cc",
+  text: "#0e1118",
+  textDim: "#4a5060",
+  textMuted: "#8890a0",
+  // Vivid green — batting, positive actions, boundaries
+  primary: "#00a854",
+  primaryLight: "rgba(0,168,84,0.10)",
+  primaryDim: "#008c46",
+  // Hot red — bowling, wickets, dismissals
+  secondary: "#e5213a",
+  secondaryLight: "rgba(229,33,58,0.10)",
+  secondaryDim: "#c41c32",
+  danger: "#e5213a",
+  dangerDim: "#c41c32",
+  // Deep amber — extras, milestones, highlights
+  accent: "#e09500",
+  accentDim: "#c28200",
+  default: "#0e1118",
+  headerBg: "#0e1118",
+  headerText: "#f0f2f5",
+  headerTextDim: "rgba(240,242,245,0.55)",
+  transition: "all 0.15s ease",
   ...FONTS,
   ...LAYOUT,
 };

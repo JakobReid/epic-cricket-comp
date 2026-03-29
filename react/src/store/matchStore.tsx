@@ -62,6 +62,7 @@ function createInnings(
     runs: 0,
     wickets: 0,
     extras: { wides: 0, noBalls: 0, byes: 0, legByes: 0 },
+    overCompletedAt: [],
     status: "upcoming",
   };
 }
@@ -183,34 +184,14 @@ function applyDelivery(
   else if (input.extraType === "bye") ni.extras.byes += byeRuns;
   else if (input.extraType === "leg-bye") ni.extras.legByes += byeRuns;
 
-  // ── Handle legal ball + over progression
-  let completedAnOver = false;
+  // ── Handle legal ball count (over progression is manual via confirmOver)
   if (isLegal) {
     ni.ballsInCurrentOver += 1;
-    if (ni.ballsInCurrentOver >= config.ballsPerOver) {
-      ni.completedOvers += 1;
-      ni.ballsInCurrentOver = 0;
-      completedAnOver = true;
-    }
   }
 
-  // ── Striker swap: odd bat runs then end-of-over (independent operations)
+  // ── Striker swap on odd bat runs
   if (isLegal && batRuns % 2 === 1) {
     [ni.strikerId, ni.nonStrikerId] = [ni.nonStrikerId, ni.strikerId];
-  }
-  if (completedAnOver) {
-    [ni.strikerId, ni.nonStrikerId] = [ni.nonStrikerId, ni.strikerId];
-  }
-
-  // ── After over: advance bowler or end innings
-  if (completedAnOver) {
-    if (ni.completedOvers >= config.overs) {
-      ni.status = "complete";
-    } else {
-      const next = getBowlerForOver(ni.completedOvers + 1, ni, match.teams);
-      ni.currentBowlerId = next.bowlerId;
-      ni.currentBowlingTeamId = next.bowlingTeamId;
-    }
   }
 
   return ni;
@@ -343,6 +324,71 @@ export function MatchStoreProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const confirmOver = (matchId: string) => {
+    setMatches(prev => {
+      const match = prev.find(m => m.id === matchId);
+      if (!match || match.status !== "live") return prev;
+
+      const inn = match.innings[match.currentInningsIndex];
+      if (!inn || inn.status !== "in-progress") return prev;
+      if (inn.ballsInCurrentOver < match.format.ballsPerOver) return prev;
+
+      // Save undo snapshot
+      setUndoStacks(us => ({
+        ...us,
+        [matchId]: [...(us[matchId] ?? []), match],
+      }));
+
+      let ni: InningsState = {
+        ...inn,
+        completedOvers: inn.completedOvers + 1,
+        ballsInCurrentOver: 0,
+        overCompletedAt: [...inn.overCompletedAt, new Date().toISOString()],
+      };
+
+      // Swap striker at end of over
+      [ni.strikerId, ni.nonStrikerId] = [ni.nonStrikerId, ni.strikerId];
+
+      // Advance bowler or end innings
+      if (ni.completedOvers >= match.format.overs) {
+        ni.status = "complete";
+      } else {
+        const next = getBowlerForOver(ni.completedOvers + 1, ni, match.teams);
+        ni.currentBowlerId = next.bowlerId;
+        ni.currentBowlingTeamId = next.bowlingTeamId;
+      }
+
+      let newInnings = match.innings.map((x, i) =>
+        i === match.currentInningsIndex ? ni : x
+      );
+
+      let newCurrentIdx = match.currentInningsIndex;
+      let newStatus: Match["status"] = match.status;
+      let endedAt = match.endedAt;
+
+      if (ni.status === "complete") {
+        const nextIdx = match.currentInningsIndex + 1;
+        if (nextIdx >= match.innings.length) {
+          newStatus = "completed";
+          endedAt = new Date().toISOString();
+        } else {
+          newCurrentIdx = nextIdx;
+          newInnings = newInnings.map((x, i) =>
+            i === nextIdx ? { ...x, status: "in-progress" as const } : x
+          );
+        }
+      }
+
+      return prev.map(m => m.id !== matchId ? m : {
+        ...m,
+        innings: newInnings,
+        currentInningsIndex: newCurrentIdx,
+        status: newStatus,
+        endedAt,
+      });
+    });
+  };
+
   const undoDelivery = (matchId: string) => {
     const stack = undoStacks[matchId];
     if (!stack || stack.length === 0) return;
@@ -352,7 +398,7 @@ export function MatchStoreProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <Ctx.Provider value={{ matches, currentMatchId, openMatch, createMatch, startMatch, recordDelivery, endMatch, nextInnings, undoDelivery }}>
+    <Ctx.Provider value={{ matches, currentMatchId, openMatch, createMatch, startMatch, recordDelivery, confirmOver, endMatch, nextInnings, undoDelivery }}>
       {children}
     </Ctx.Provider>
   );

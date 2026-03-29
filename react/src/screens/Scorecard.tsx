@@ -41,7 +41,7 @@ function computeFOW(innings: InningsState) {
 
 // ─── Per-innings detail view ───────────────────────────────────────────────────
 
-function InningsDetail({ innings, match, onBack }: { innings: InningsState; match: Match; onBack: () => void }) {
+function InningsDetail({ innings, match, inningsNum, onBack }: { innings: InningsState; match: Match; inningsNum: number; onBack: () => void }) {
   const t = useTheme();
   const [subTab, setSubTab] = useState<"batting" | "bowling" | "overs">("batting");
   const team = match.teams.find(tm => tm.id === innings.battingTeamId);
@@ -82,34 +82,48 @@ function InningsDetail({ innings, match, onBack }: { innings: InningsState; matc
 
   return (
     <div>
-      {/* Header */}
+      {/* Team-colored header band */}
       <div style={{
-        background: color, padding: "12px 16px",
+        background: color,
+        padding: "14px 16px",
         display: "flex", alignItems: "center", gap: 10,
+        borderBottom: `2px solid ${color}`,
       }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
+        <button onClick={onBack} style={{
+          background: "rgba(0,0,0,0.25)", border: "none", cursor: "pointer",
+          padding: 6, display: "flex", alignItems: "center",
+          borderRadius: t.radius,
+        }}>
           <ChevronLeft size={18} color="#fff" strokeWidth={2.5} />
         </button>
-        <TeamLogo logoKey={team?.logo ?? "shield"} color="rgba(255,255,255,0.85)" size={16} />
+        <div style={{
+          fontFamily: t.fontDisplay, fontSize: 10, fontWeight: 700,
+          color: "rgba(255,255,255,0.6)", letterSpacing: 1.8, textTransform: "uppercase",
+        }}>
+          INN {inningsNum}
+        </div>
+        <TeamLogo logoKey={team?.logo ?? "shield"} color="rgba(255,255,255,0.9)" size={18} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: t.fontSans, fontSize: 16, fontWeight: 800, color: "#fff" }}>{innings.battingTeamName}</div>
-          <div style={{ fontFamily: t.font, fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+          <div style={{ fontFamily: t.fontDisplay, fontSize: 18, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: 1 }}>
+            {innings.battingTeamName}
+          </div>
+          <div style={{ fontFamily: t.font, fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>
             {innings.wickets}/{innings.runs} · {oversStr(innings.completedOvers * 6)} ov
           </div>
         </div>
       </div>
 
       {/* Sub-tabs */}
-      <div style={{ display: "flex", borderBottom: `${t.borderWidth}px solid ${t.border}`, background: t.bg }}>
+      <div style={{ display: "flex", background: t.card, borderBottom: `${t.borderWidth}px solid ${t.border}` }}>
         {SUB_TABS.map(({ id, label }) => {
           const active = subTab === id;
           return (
             <button key={id} onClick={() => setSubTab(id)} style={{
-              flex: 1, padding: "10px 0", background: "none", border: "none",
-              borderBottom: active ? `2px solid ${color}` : "2px solid transparent",
-              marginBottom: -t.borderWidth,
-              fontFamily: t.fontSans, fontSize: 13, fontWeight: active ? 700 : 500,
+              flex: 1, padding: "10px 0", background: "transparent", border: "none", borderRadius: 0,
+              borderBottom: active ? `2px solid ${t.primary}` : "2px solid transparent",
+              fontFamily: t.fontDisplay, fontSize: 12, fontWeight: active ? 700 : 500,
               color: active ? t.text : t.textMuted, cursor: "pointer",
+              textTransform: "uppercase", letterSpacing: 1.5,
             }}>{label}</button>
           );
         })}
@@ -131,19 +145,32 @@ function InningsDetail({ innings, match, onBack }: { innings: InningsState; matc
         )}
 
         {subTab === "overs" && (
-          <div style={{ background: t.card, border: `${t.borderWidth}px solid ${t.border}`, borderRadius: t.radiusLg, overflow: "hidden" }}>
-            <div style={{ display: "flex", padding: "8px 14px", background: color }}>
-              <span style={{ width: 32, fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>OV</span>
-              <span style={{ flex: 1, fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>BALLS</span>
-              <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>R</span>
+          <div style={{
+            background: t.card, border: `${t.borderWidth}px solid ${color}`,
+            borderRadius: t.radiusLg, overflow: "hidden",
+          }}>
+            <div style={{
+              display: "flex", padding: "8px 14px",
+              background: color,
+              borderBottom: `${t.borderWidth}px solid ${t.border}`,
+            }}>
+              <span style={{ width: 32, fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1.5 }}>OV</span>
+              <span style={{ flex: 1, fontFamily: t.font, fontSize: 10, color: "rgba(255,255,255,0.7)", letterSpacing: 1.5 }}>BALLS</span>
+              <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 10, color: "rgba(255,255,255,0.7)", letterSpacing: 1.5 }}>R</span>
             </div>
             {overSummaries.length === 0 ? (
-              <div style={{ padding: "12px 14px", fontFamily: t.fontSans, fontSize: 13, color: t.textMuted }}>No overs bowled yet</div>
+              <div style={{ padding: "14px", fontFamily: t.fontSans, fontSize: 13, color: t.textMuted }}>No overs bowled yet</div>
             ) : overSummaries.map((ov, i) => (
-              <div key={ov.num} style={{ display: "flex", padding: "9px 14px", borderBottom: i < overSummaries.length - 1 ? `${t.borderWidth}px solid ${color}44` : undefined, alignItems: "center" }}>
-                <span style={{ width: 36, fontFamily: t.font, fontSize: 13, fontWeight: 700, color: t.textDim }}>{ov.num}<sup style={{ fontSize: 9 }}>{ordinal(ov.num).slice(String(ov.num).length)}</sup></span>
+              <div key={ov.num} style={{
+                display: "flex", padding: "9px 14px", alignItems: "center",
+                borderBottom: i < overSummaries.length - 1 ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                background: i % 2 === 0 ? t.card : t.cardAlt,
+              }}>
+                <span style={{ width: 36, fontFamily: t.font, fontSize: 13, fontWeight: 800, color: t.textDim }}>
+                  {ov.num}<sup style={{ fontSize: 9, color: t.textMuted }}>{ordinal(ov.num).slice(String(ov.num).length)}</sup>
+                </span>
                 <span style={{ flex: 1, fontFamily: t.font, fontSize: 13, color: t.textDim, letterSpacing: 2 }}>{ov.events}</span>
-                <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 14, fontWeight: 700, color: t.text }}>{ov.runs}</span>
+                <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 15, fontWeight: 800, color: t.text }}>{ov.runs}</span>
               </div>
             ))}
             {(() => {
@@ -151,15 +178,27 @@ function InningsDetail({ innings, match, onBack }: { innings: InningsState; matc
               if (fow.length === 0) return null;
               return (
                 <>
-                  <div style={{ padding: "6px 14px", background: color, borderTop: `${t.borderWidth}px solid ${color}` }}>
-                    <span style={{ fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>FALL OF WICKETS</span>
+                  <div style={{
+                    padding: "7px 14px",
+                    background: `${color}22`,
+                    borderTop: `${t.borderWidth}px solid ${t.border}`,
+                  }}>
+                    <span style={{ fontFamily: t.fontDisplay, fontSize: 11, color: t.textDim, letterSpacing: 2, textTransform: "uppercase" }}>Fall of Wickets</span>
                   </div>
                   {fow.map((f, i) => (
-                    <div key={f.wicket} style={{ display: "flex", padding: "8px 14px", borderBottom: i < fow.length - 1 ? `${t.borderWidth}px solid ${color}44` : undefined, alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 22, height: 22, borderRadius: t.radius, background: color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: t.font, fontSize: 11, fontWeight: 700, color: color, flexShrink: 0 }}>{f.wicket}</div>
+                    <div key={f.wicket} style={{
+                      display: "flex", padding: "8px 14px", alignItems: "center", gap: 10,
+                      borderBottom: i < fow.length - 1 ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                    }}>
+                      <div style={{
+                        width: 22, height: 22, borderRadius: t.radius,
+                        background: color, border: `${t.borderWidth}px solid ${color}44`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontFamily: t.font, fontSize: 11, fontWeight: 800, color, flexShrink: 0,
+                      }}>{f.wicket}</div>
                       <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, color: t.text }}>{f.name}</span>
-                      <span style={{ fontFamily: t.font, fontSize: 13, fontWeight: 700, color: t.text }}>{f.score}</span>
-                      <span style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted, width: 36, textAlign: "right" }}>{f.overStr} ov</span>
+                      <span style={{ fontFamily: t.font, fontSize: 14, fontWeight: 800, color: t.text }}>{f.score}</span>
+                      <span style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted, width: 40, textAlign: "right" }}>{f.overStr} ov</span>
                     </div>
                   ))}
                 </>
@@ -185,7 +224,11 @@ export function Scorecard({ matchId }: { matchId: string }) {
 
   if (selectedInnings !== null) {
     const inn = match.innings[selectedInnings];
-    if (inn) return <InningsDetail innings={inn} match={match} onBack={() => setSelectedInnings(null)} />;
+    if (inn) return (
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, background: t.bg, overflow: "auto" }}>
+        <InningsDetail innings={inn} match={match} inningsNum={selectedInnings + 1} onBack={() => setSelectedInnings(null)} />
+      </div>
+    );
   }
 
   const TABS = [
@@ -290,16 +333,16 @@ export function Scorecard({ matchId }: { matchId: string }) {
   return (
     <div>
       {/* Tabs */}
-      <div style={{ display: "flex", borderBottom: `${t.borderWidth}px solid ${t.border}`, background: t.bg }}>
+      <div style={{ display: "flex", background: t.card, borderBottom: `${t.borderWidth}px solid ${t.border}` }}>
         {TABS.map(({ id, label }) => {
           const active = tab === id;
           return (
             <button key={id} onClick={() => setTab(id)} style={{
-              flex: 1, padding: "10px 0", background: "none", border: "none",
+              flex: 1, padding: "10px 0", background: "transparent", border: "none", borderRadius: 0,
               borderBottom: active ? `2px solid ${t.primary}` : "2px solid transparent",
-              marginBottom: -t.borderWidth,
-              fontFamily: t.fontSans, fontSize: 13, fontWeight: active ? 700 : 500,
+              fontFamily: t.fontDisplay, fontSize: 12, fontWeight: active ? 700 : 500,
               color: active ? t.text : t.textMuted, cursor: "pointer",
+              textTransform: "uppercase", letterSpacing: 1.5,
             }}>{label}</button>
           );
         })}
@@ -315,65 +358,83 @@ export function Scorecard({ matchId }: { matchId: string }) {
             </div>
           ) : (
             <div>
-              {/* Winner banner */}
+              {/* Winner banner - ESPN MATCH RESULT style */}
               {winner && (
                 <div style={{
-                  background: t.card, border: `${t.borderWidth}px solid ${winner.color}`,
+                  background: t.card,
+                  border: `2px solid ${winner.color}`,
                   borderRadius: t.radiusLg, overflow: "hidden", marginBottom: 16,
                 }}>
-                  {/* Coloured header band */}
-                  <div style={{ background: winner.color, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
-                    <Crown size={13} color="#fff" fill="#fff" />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: t.font, letterSpacing: 2, textTransform: "uppercase" }}>
-                      {isComplete ? "Winner" : "Leading"}
+                  {/* Gradient header band */}
+                  <div style={{
+                    background: winner.color,
+                    padding: "6px 14px",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    <Crown size={12} color="#fff" fill="#fff" />
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, color: "#fff",
+                      fontFamily: t.fontDisplay, letterSpacing: 3, textTransform: "uppercase",
+                    }}>
+                      {isComplete ? "Match Result" : "Leading"}
                     </span>
                   </div>
                   {/* Body */}
-                  <div style={{ padding: "16px 14px", textAlign: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
-                      <TeamLogo logoKey={winner.logo} color={winner.color} size={28} />
-                      <div style={{ fontFamily: t.fontSans, fontSize: 24, fontWeight: 800, color: t.text }}>{winner.teamName}</div>
+                  <div style={{
+                    padding: "20px 14px 18px", textAlign: "center",
+                    background: "transparent",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 8 }}>
+                      <TeamLogo logoKey={winner.logo} color={winner.color} size={32} />
+                      <div style={{ fontFamily: t.fontDisplay, fontSize: 26, fontWeight: 700, color: t.text, textTransform: "uppercase", letterSpacing: 2 }}>
+                        {winner.teamName}
+                      </div>
                     </div>
-                    <div style={{ fontFamily: t.font, fontSize: 28, fontWeight: 800, color: winner.color }}>
+                    <div style={{ fontFamily: t.font, fontSize: 32, fontWeight: 800, color: winner.color, letterSpacing: 1 }}>
                       {winner.runs}
-                      <span style={{ fontSize: 14, color: t.textMuted, fontWeight: 400 }}> ({winner.overs} ov)</span>
+                      <span style={{ fontSize: 14, color: t.textMuted, fontWeight: 400, marginLeft: 6 }}>({winner.overs} ov)</span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Standings */}
-              <div style={{ fontSize: 12, color: t.textDim, fontFamily: t.font, letterSpacing: 1.5, marginBottom: 8, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{
+                fontSize: 11, color: t.textDim, fontFamily: t.fontDisplay, letterSpacing: 2.5,
+                marginBottom: 8, textTransform: "uppercase",
+                display: "flex", alignItems: "center", gap: 6,
+              }}>
                 <ListOrdered size={12} /> {isComplete ? "Final Standings" : "Current Standings"}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 20 }}>
                 {standings.map((s, i) => {
                   const isLeader = i === 0 && s.batted;
                   return (
                     <div key={s.teamId} style={{
-                      background: t.card, border: `${t.borderWidth}px solid ${isLeader ? s.color : t.border}`,
-                      borderRadius: t.radius, padding: "12px 14px",
+                      background: t.card,
+                      border: `${t.borderWidth}px solid ${isLeader ? s.color : t.border}`,
+                      borderRadius: t.radius, padding: "11px 14px",
                       display: "flex", alignItems: "center", gap: 12,
                     }}>
                       <div style={{
-                        width: 28, height: 28, borderRadius: t.radius,
-                        background: isLeader ? s.color + "22" : t.cardAlt,
+                        width: 26, height: 26, borderRadius: t.radius,
+                        background: isLeader ? `${s.color}22` : t.bgAlt,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontFamily: t.font, fontSize: 14, fontWeight: 800,
+                        fontFamily: t.font, fontSize: 13, fontWeight: 800,
                         color: isLeader ? s.color : t.textMuted,
                       }}>
-                        {isLeader ? <Crown size={14} /> : (s.batted ? i + 1 : "—")}
+                        {isLeader ? <Crown size={13} color={s.color} /> : (s.batted ? i + 1 : "—")}
                       </div>
                       <TeamLogo logoKey={s.logo} color={s.color} size={14} />
                       <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.text }}>{s.teamName}</span>
                       <div style={{ textAlign: "right" }}>
                         {s.batted ? (
                           <>
-                            <span style={{ fontFamily: t.font, fontSize: 16, fontWeight: 800, color: isLeader ? s.color : t.text }}>{s.runs}</span>
+                            <span style={{ fontFamily: t.font, fontSize: 17, fontWeight: 800, color: isLeader ? s.color : t.text }}>{s.runs}</span>
                             <span style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted, marginLeft: 4 }}>({s.overs})</span>
                           </>
                         ) : (
-                          <span style={{ fontFamily: t.font, fontSize: 12, color: t.textMuted, fontStyle: "italic" }}>Yet to bat</span>
+                          <span style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted, fontStyle: "italic" }}>Yet to bat</span>
                         )}
                       </div>
                     </div>
@@ -381,87 +442,37 @@ export function Scorecard({ matchId }: { matchId: string }) {
                 })}
               </div>
 
-              {/* Live status */}
-              {liveInnings && (
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 12, color: t.textDim, fontFamily: t.font, letterSpacing: 1.5, marginBottom: 8, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: 4, background: t.danger, display: "inline-block" }} />
-                    Now Playing
-                  </div>
-                  <div style={{ background: t.card, border: `${t.borderWidth}px solid ${t.border}`, borderRadius: t.radiusLg, overflow: "hidden" }}>
-
-                    {/* Batting row */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: `${t.borderWidth}px solid ${t.border}` }}>
-                      <div style={{ width: 56, fontFamily: t.font, fontSize: 10, fontWeight: 700, color: currentBattingTeam?.color ?? t.textMuted, letterSpacing: 1 }}>BATTING</div>
-                      <TeamLogo logoKey={currentBattingTeam?.logo ?? "shield"} color={currentBattingTeam?.color ?? t.textMuted} size={13} />
-                      <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{liveInnings.battingTeamName}</span>
-                      <div style={{ textAlign: "right" }}>
-                        {striker && <div style={{ fontFamily: t.fontSans, fontSize: 12, color: t.text }}><span style={{ width: 6, height: 6, borderRadius: 3, background: currentBattingTeam?.color ?? t.primary, display: "inline-block", marginRight: 5 }} />{striker.name} {striker.runs}({striker.balls})</div>}
-                        {nonStriker && <div style={{ fontFamily: t.fontSans, fontSize: 12, color: t.textMuted }}>{nonStriker.name} {nonStriker.runs}({nonStriker.balls})</div>}
-                      </div>
-                    </div>
-
-                    {/* Bowling row */}
-                    {currentBowler && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: fieldingTeams.length > 0 ? `${t.borderWidth}px solid ${t.border}` : undefined }}>
-                        <div style={{ width: 56, fontFamily: t.font, fontSize: 10, fontWeight: 700, color: currentBowlingTeam?.color ?? t.textMuted, letterSpacing: 1 }}>BOWLING</div>
-                        <TeamLogo logoKey={currentBowlingTeam?.logo ?? "shield"} color={currentBowlingTeam?.color ?? t.textMuted} size={13} />
-                        <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{currentBowlingTeam?.name ?? ""}</span>
-                        <div style={{ textAlign: "right" }}>
-                          <div style={{ fontFamily: t.fontSans, fontSize: 12, color: t.text }}>{currentBowler.name}</div>
-                          <div style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted }}>{currentBowler.wickets}/{currentBowler.runsConceded} ({Math.floor(currentBowler.legalBalls / 6)}.{currentBowler.legalBalls % 6} ov)</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Fielding rows */}
-                    {fieldingTeams.map((ft, i) => (
-                      <div key={ft.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: i < fieldingTeams.length - 1 ? `${t.borderWidth}px solid ${t.border}` : undefined }}>
-                        <div style={{ width: 56, fontFamily: t.font, fontSize: 10, fontWeight: 700, color: ft.color ?? t.textMuted, letterSpacing: 1 }}>FIELDING</div>
-                        <TeamLogo logoKey={ft.logo ?? "shield"} color={ft.color ?? t.textMuted} size={13} />
-                        <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{ft.name}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Up next */}
-                  {(nextInnings && nextBattingTeam || nextBowlingTurn) && (
-                    <div style={{ marginTop: 8, background: t.card, border: `${t.borderWidth}px solid ${t.border}`, borderRadius: t.radius, overflow: "hidden" }}>
-                      {nextInnings && nextBattingTeam && (
-                        <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: nextBowlingTurn ? `${t.borderWidth}px solid ${t.border}` : undefined }}>
-                          <div style={{ fontFamily: t.font, fontSize: 10, fontWeight: 700, color: t.textMuted, letterSpacing: 1, width: 64 }}>NEXT BAT</div>
-                          <TeamLogo logoKey={nextBattingTeam.logo ?? "shield"} color={nextBattingTeam.color ?? t.textMuted} size={13} />
-                          <span style={{ fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{nextBattingTeam.name}</span>
-                        </div>
-                      )}
-                      {nextBowlingTurn && nextBowlingTeam && (
-                        <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ fontFamily: t.font, fontSize: 10, fontWeight: 700, color: t.textMuted, letterSpacing: 1, width: 64 }}>NEXT BOWL</div>
-                          <TeamLogo logoKey={nextBowlingTeam.logo ?? "shield"} color={nextBowlingTeam.color ?? t.textMuted} size={13} />
-                          <span style={{ fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{nextBowlingTeam.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Player awards */}
               {(bestBatter || bestBowler) && (
                 <>
-                  <div style={{ fontSize: 12, color: t.textDim, fontFamily: t.font, letterSpacing: 1.5, marginBottom: 8, textTransform: "uppercase" }}>
+                  <div style={{
+                    fontSize: 11, color: t.textDim, fontFamily: t.fontDisplay, letterSpacing: 2.5,
+                    marginBottom: 8, textTransform: "uppercase",
+                  }}>
                     Player Awards
                   </div>
-                  <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                     {bestBatter && (
-                      <div style={{ flex: 1, background: t.card, border: `${t.borderWidth}px solid ${bestBatter.teamColor}`, borderRadius: t.radiusLg, padding: 14, textAlign: "center" }}>
-                        <div style={{ width: 44, height: 44, borderRadius: t.radius, background: bestBatter.teamColor, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
-                          <img src={batLineal} style={{ width: 24, height: 24, filter: "brightness(0) invert(1)" }} />
+                      <div style={{
+                        flex: 1, background: t.card,
+                        border: `2px solid ${bestBatter.teamColor}`,
+                        borderRadius: t.radiusLg, padding: "14px 10px", textAlign: "center",
+                      }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: t.radius,
+                          background: `${bestBatter.teamColor}15`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          margin: "0 auto 8px",
+                        }}>
+                          <img src={batLineal} style={{ width: 22, height: 22, opacity: 0.85 }} />
                         </div>
-                        <div style={{ fontSize: 11, color: bestBatter.teamColor, fontFamily: t.font, letterSpacing: 1, fontWeight: 700, marginBottom: 6 }}>BEST BATTER</div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 3 }}>
+                        <div style={{
+                          fontSize: 10, color: bestBatter.teamColor, fontFamily: t.fontDisplay,
+                          letterSpacing: 2, fontWeight: 700, marginBottom: 6, textTransform: "uppercase",
+                        }}>Best Batter</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 4 }}>
                           <TeamLogo logoKey={bestBatter.teamLogo} color={bestBatter.teamColor} size={12} />
-                          <span style={{ fontFamily: t.fontSans, fontSize: 15, fontWeight: 800, color: t.text }}>{bestBatter.name}</span>
+                          <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 800, color: t.text }}>{bestBatter.name}</span>
                         </div>
                         <div style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted }}>
                           {bestBatter.runs} ({bestBatter.balls}) — SR {bestBatterSR}
@@ -469,14 +480,26 @@ export function Scorecard({ matchId }: { matchId: string }) {
                       </div>
                     )}
                     {bestBowler && (
-                      <div style={{ flex: 1, background: t.card, border: `${t.borderWidth}px solid ${bestBowler.teamColor}`, borderRadius: t.radiusLg, padding: 14, textAlign: "center" }}>
-                        <div style={{ width: 44, height: 44, borderRadius: t.radius, background: bestBowler.teamColor, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
-                          <img src={ballLineal} style={{ width: 24, height: 24, filter: "brightness(0) invert(1)" }} />
+                      <div style={{
+                        flex: 1, background: t.card,
+                        border: `2px solid ${bestBowler.teamColor}`,
+                        borderRadius: t.radiusLg, padding: "14px 10px", textAlign: "center",
+                      }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: t.radius,
+                          background: `${bestBowler.teamColor}15`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          margin: "0 auto 8px",
+                        }}>
+                          <img src={ballLineal} style={{ width: 22, height: 22, opacity: 0.85 }} />
                         </div>
-                        <div style={{ fontSize: 11, color: bestBowler.teamColor, fontFamily: t.font, letterSpacing: 1, fontWeight: 700, marginBottom: 6 }}>BEST BOWLER</div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 3 }}>
+                        <div style={{
+                          fontSize: 10, color: bestBowler.teamColor, fontFamily: t.fontDisplay,
+                          letterSpacing: 2, fontWeight: 700, marginBottom: 6, textTransform: "uppercase",
+                        }}>Best Bowler</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 4 }}>
                           <TeamLogo logoKey={bestBowler.teamLogo} color={bestBowler.teamColor} size={12} />
-                          <span style={{ fontFamily: t.fontSans, fontSize: 15, fontWeight: 800, color: t.text }}>{bestBowler.name}</span>
+                          <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 800, color: t.text }}>{bestBowler.name}</span>
                         </div>
                         <div style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted }}>
                           {bestBowler.wickets}/{bestBowler.runsConceded} ({bestBowlerOv} ov) — Econ {bestBowlerEcon}
@@ -484,14 +507,26 @@ export function Scorecard({ matchId }: { matchId: string }) {
                       </div>
                     )}
                     {catches.length > 0 && (
-                      <div style={{ flex: 1, background: t.card, border: `${t.borderWidth}px solid ${catches[0].teamColor}`, borderRadius: t.radiusLg, padding: 14, textAlign: "center" }}>
-                        <div style={{ width: 44, height: 44, borderRadius: t.radius, background: catches[0].teamColor, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
-                          <Hand size={22} color="#fff" />
+                      <div style={{
+                        flex: 1, background: t.card,
+                        border: `2px solid ${catches[0].teamColor}`,
+                        borderRadius: t.radiusLg, padding: "14px 10px", textAlign: "center",
+                      }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: t.radius,
+                          background: `${catches[0].teamColor}15`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          margin: "0 auto 8px",
+                        }}>
+                          <Hand size={20} color={catches[0].teamColor} />
                         </div>
-                        <div style={{ fontSize: 11, color: catches[0].teamColor, fontFamily: t.font, letterSpacing: 1, fontWeight: 700, marginBottom: 6 }}>BEST CATCHER</div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 3 }}>
+                        <div style={{
+                          fontSize: 10, color: catches[0].teamColor, fontFamily: t.fontDisplay,
+                          letterSpacing: 2, fontWeight: 700, marginBottom: 6, textTransform: "uppercase",
+                        }}>Best Catcher</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 4 }}>
                           <TeamLogo logoKey={catches[0].teamLogo} color={catches[0].teamColor} size={12} />
-                          <span style={{ fontFamily: t.fontSans, fontSize: 15, fontWeight: 800, color: t.text }}>{catches[0].name}</span>
+                          <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 800, color: t.text }}>{catches[0].name}</span>
                         </div>
                         <div style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted }}>
                           {catches[0].catches} catches — +{catches[0].catches * match.format.catchBonus} pts
@@ -502,26 +537,152 @@ export function Scorecard({ matchId }: { matchId: string }) {
                 </>
               )}
 
+              {/* Live status */}
+              {liveInnings && (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{
+                    fontSize: 11, color: t.textDim, fontFamily: t.fontDisplay, letterSpacing: 2.5,
+                    marginBottom: 8, textTransform: "uppercase",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: "50%",
+                      background: t.danger, display: "inline-block",
+                      boxShadow: `0 0 8px ${t.danger}88`,
+                      animation: "pulse 2s infinite",
+                    }} />
+                    Now Playing
+                  </div>
+                  <div style={{
+                    background: t.card,
+                    border: `${t.borderWidth}px solid ${t.borderBright}`,
+                    borderRadius: t.radiusLg, overflow: "hidden",
+                  }}>
+                    {/* Batting row */}
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "11px 14px",
+                      borderBottom: `${t.borderWidth}px solid ${t.border}`,
+                    }}>
+                      <div style={{
+                        width: 56, fontFamily: t.fontDisplay, fontSize: 10, fontWeight: 600,
+                        color: currentBattingTeam?.color ?? t.textMuted, letterSpacing: 1.5, textTransform: "uppercase",
+                      }}>BAT</div>
+                      <TeamLogo logoKey={currentBattingTeam?.logo ?? "shield"} color={currentBattingTeam?.color ?? t.textMuted} size={13} />
+                      <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{liveInnings.battingTeamName}</span>
+                      <div style={{ textAlign: "right" }}>
+                        {striker && (
+                          <div style={{ fontFamily: t.fontSans, fontSize: 12, color: t.text, display: "flex", alignItems: "center", gap: 5, justifyContent: "flex-end" }}>
+                            <span style={{
+                              width: 6, height: 6, borderRadius: "50%",
+                              background: currentBattingTeam?.color ?? t.primary,
+                              display: "inline-block",
+                            }} />
+                            {striker.name} <span style={{ fontFamily: t.font, fontWeight: 700 }}>{striker.runs}</span>({striker.balls})
+                          </div>
+                        )}
+                        {nonStriker && (
+                          <div style={{ fontFamily: t.fontSans, fontSize: 12, color: t.textMuted }}>
+                            {nonStriker.name} <span style={{ fontFamily: t.font }}>{nonStriker.runs}</span>({nonStriker.balls})
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Bowling row */}
+                    {currentBowler && (
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "11px 14px",
+                        borderBottom: fieldingTeams.length > 0 ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                      }}>
+                        <div style={{
+                          width: 56, fontFamily: t.fontDisplay, fontSize: 10, fontWeight: 600,
+                          color: currentBowlingTeam?.color ?? t.textMuted, letterSpacing: 1.5, textTransform: "uppercase",
+                        }}>BOWL</div>
+                        <TeamLogo logoKey={currentBowlingTeam?.logo ?? "shield"} color={currentBowlingTeam?.color ?? t.textMuted} size={13} />
+                        <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{currentBowlingTeam?.name ?? ""}</span>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontFamily: t.fontSans, fontSize: 12, color: t.text }}>{currentBowler.name}</div>
+                          <div style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted }}>
+                            <span style={{ color: currentBowler.wickets > 0 ? t.danger : t.textDim, fontWeight: 700 }}>{currentBowler.wickets}</span>/{currentBowler.runsConceded} ({Math.floor(currentBowler.legalBalls / 6)}.{currentBowler.legalBalls % 6} ov)
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {/* Fielding rows */}
+                    {fieldingTeams.map((ft, i) => (
+                      <div key={ft.id} style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "11px 14px",
+                        borderBottom: i < fieldingTeams.length - 1 ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                      }}>
+                        <div style={{
+                          width: 56, fontFamily: t.fontDisplay, fontSize: 10, fontWeight: 600,
+                          color: ft.color ?? t.textMuted, letterSpacing: 1.5, textTransform: "uppercase",
+                        }}>FIELD</div>
+                        <TeamLogo logoKey={ft.logo ?? "shield"} color={ft.color ?? t.textMuted} size={13} />
+                        <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{ft.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Up next */}
+                  {(nextInnings && nextBattingTeam || nextBowlingTurn) && (
+                    <div style={{
+                      marginTop: 6, background: t.card,
+                      border: `${t.borderWidth}px solid ${t.border}`,
+                      borderRadius: t.radius, overflow: "hidden",
+                    }}>
+                      {nextInnings && nextBattingTeam && (
+                        <div style={{
+                          padding: "10px 14px", display: "flex", alignItems: "center", gap: 10,
+                          borderBottom: nextBowlingTurn ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                        }}>
+                          <div style={{ fontFamily: t.fontDisplay, fontSize: 10, fontWeight: 600, color: t.textMuted, letterSpacing: 1.5, width: 64, textTransform: "uppercase" }}>NEXT BAT</div>
+                          <TeamLogo logoKey={nextBattingTeam.logo ?? "shield"} color={nextBattingTeam.color ?? t.textMuted} size={13} />
+                          <span style={{ fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{nextBattingTeam.name}</span>
+                        </div>
+                      )}
+                      {nextBowlingTurn && nextBowlingTeam && (
+                        <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ fontFamily: t.fontDisplay, fontSize: 10, fontWeight: 600, color: t.textMuted, letterSpacing: 1.5, width: 64, textTransform: "uppercase" }}>NEXT BOWL</div>
+                          <TeamLogo logoKey={nextBowlingTeam.logo ?? "shield"} color={nextBowlingTeam.color ?? t.textMuted} size={13} />
+                          <span style={{ fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, color: t.text }}>{nextBowlingTeam.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Fielding catches */}
               {catches.length > 0 && (
                 <>
-                  <div style={{ fontSize: 12, color: t.textDim, fontFamily: t.font, letterSpacing: 1.5, marginBottom: 8, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{
+                    fontSize: 11, color: t.textDim, fontFamily: t.fontDisplay, letterSpacing: 2.5,
+                    marginBottom: 8, textTransform: "uppercase",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
                     <Medal size={12} /> Fielding Catches
                   </div>
-                  <div style={{ background: t.card, border: `${t.borderWidth}px solid ${t.border}`, borderRadius: t.radiusLg, overflow: "hidden" }}>
+                  <div style={{
+                    background: t.card,
+                    border: `${t.borderWidth}px solid ${t.borderBright}`,
+                    borderRadius: t.radiusLg, overflow: "hidden",
+                  }}>
                     {catches.map((c, i) => (
                       <div key={c.name} style={{
                         padding: "10px 14px", display: "flex", alignItems: "center", gap: 12,
                         borderBottom: i < catches.length - 1 ? `${t.borderWidth}px solid ${t.border}` : "none",
+                        background: i % 2 === 0 ? t.card : t.cardAlt,
                       }}>
-                        <div style={{ fontFamily: t.font, fontSize: 13, fontWeight: 800, color: t.textMuted, width: 20 }}>{i + 1}</div>
+                        <div style={{
+                          fontFamily: t.font, fontSize: 13, fontWeight: 800,
+                          color: t.textMuted, width: 20,
+                        }}>{i + 1}</div>
                         <TeamLogo logoKey={c.teamLogo} color={c.teamColor} size={14} />
                         <div style={{ flex: 1 }}>
                           <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.text }}>{c.name}</span>
-                          <span style={{ fontFamily: t.fontSans, fontSize: 12, color: t.textMuted, marginLeft: 6 }}>{c.teamName}</span>
+                          <span style={{ fontFamily: t.fontSans, fontSize: 11, color: t.textMuted, marginLeft: 6 }}>{c.teamName}</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontFamily: t.font, fontSize: 14, fontWeight: 700, color: t.text }}>{c.catches}</span>
+                          <span style={{ fontFamily: t.font, fontSize: 16, fontWeight: 800, color: t.text }}>{c.catches}</span>
                           <Badge color={t.secondary}>+{c.catches * match.format.catchBonus}</Badge>
                         </div>
                       </div>
@@ -553,21 +714,34 @@ export function Scorecard({ matchId }: { matchId: string }) {
               }
 
               return (
-                <div key={inIdx} onClick={() => setSelectedInnings(realIdx)} style={{ border: `${t.borderWidth}px solid ${color}`, borderRadius: t.radiusLg, overflow: "hidden", cursor: "pointer" }}>
+                <div key={inIdx} onClick={() => setSelectedInnings(realIdx)} style={{
+                  border: `${t.borderWidth}px solid ${color}`,
+                  borderRadius: t.radiusLg, overflow: "hidden", cursor: "pointer",
+                }}>
                   <InningsCardHeader color={color} logo={team?.logo ?? "shield"} teamName={inn.battingTeamName} wickets={inn.wickets} runs={inn.runs} inningsNum={inIdx + 1} />
                   <div style={{ background: t.card }}>
-                    <div style={{ display: "flex", padding: "8px 14px", background: color }}>
-                      <span style={{ width: 32, fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>OV</span>
-                      <span style={{ flex: 1, fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>BALLS</span>
-                      <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>R</span>
+                    <div style={{
+                      display: "flex", padding: "8px 14px",
+                      background: color,
+                      borderBottom: `${t.borderWidth}px solid ${t.border}`,
+                    }}>
+                      <span style={{ width: 32, fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1.5 }}>OV</span>
+                      <span style={{ flex: 1, fontFamily: t.font, fontSize: 10, color: "rgba(255,255,255,0.7)", letterSpacing: 1.5 }}>BALLS</span>
+                      <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 10, color: "rgba(255,255,255,0.7)", letterSpacing: 1.5 }}>R</span>
                     </div>
                     {overSummaries.length === 0 ? (
-                      <div style={{ padding: "12px 14px", fontFamily: t.fontSans, fontSize: 13, color: t.textMuted }}>No overs bowled yet</div>
+                      <div style={{ padding: "14px", fontFamily: t.fontSans, fontSize: 13, color: t.textMuted }}>No overs bowled yet</div>
                     ) : overSummaries.map((ov, i) => (
-                      <div key={ov.num} style={{ display: "flex", padding: "9px 14px", borderBottom: i < overSummaries.length - 1 ? `${t.borderWidth}px solid ${color}44` : undefined, alignItems: "center" }}>
-                        <span style={{ width: 36, fontFamily: t.font, fontSize: 13, fontWeight: 700, color: t.textDim }}>{ov.num}<sup style={{ fontSize: 9 }}>{ordinal(ov.num).slice(String(ov.num).length)}</sup></span>
+                      <div key={ov.num} style={{
+                        display: "flex", padding: "9px 14px", alignItems: "center",
+                        borderBottom: i < overSummaries.length - 1 ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                        background: i % 2 === 0 ? t.card : t.cardAlt,
+                      }}>
+                        <span style={{ width: 36, fontFamily: t.font, fontSize: 13, fontWeight: 800, color: t.textDim }}>
+                          {ov.num}<sup style={{ fontSize: 9, color: t.textMuted }}>{ordinal(ov.num).slice(String(ov.num).length)}</sup>
+                        </span>
                         <span style={{ flex: 1, fontFamily: t.font, fontSize: 13, color: t.textDim, letterSpacing: 2 }}>{ov.events}</span>
-                        <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 14, fontWeight: 700, color: t.text }}>{ov.runs}</span>
+                        <span style={{ width: 32, textAlign: "right", fontFamily: t.font, fontSize: 15, fontWeight: 800, color: t.text }}>{ov.runs}</span>
                       </div>
                     ))}
                     {(() => {
@@ -575,15 +749,27 @@ export function Scorecard({ matchId }: { matchId: string }) {
                       if (fow.length === 0) return null;
                       return (
                         <>
-                          <div style={{ padding: "6px 14px", background: color, borderTop: `${t.borderWidth}px solid ${color}` }}>
-                            <span style={{ fontFamily: t.font, fontSize: 10, color: "#fff", letterSpacing: 1 }}>FALL OF WICKETS</span>
+                          <div style={{
+                            padding: "7px 14px",
+                            background: `${color}22`,
+                            borderTop: `${t.borderWidth}px solid ${t.border}`,
+                          }}>
+                            <span style={{ fontFamily: t.fontDisplay, fontSize: 11, color: t.textDim, letterSpacing: 2, textTransform: "uppercase" }}>Fall of Wickets</span>
                           </div>
                           {fow.map((f, i) => (
-                            <div key={f.wicket} style={{ display: "flex", padding: "8px 14px", borderBottom: i < fow.length - 1 ? `${t.borderWidth}px solid ${color}44` : undefined, alignItems: "center", gap: 10 }}>
-                              <div style={{ width: 22, height: 22, borderRadius: t.radius, background: color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: t.font, fontSize: 11, fontWeight: 700, color: color, flexShrink: 0 }}>{f.wicket}</div>
+                            <div key={f.wicket} style={{
+                              display: "flex", padding: "8px 14px", alignItems: "center", gap: 10,
+                              borderBottom: i < fow.length - 1 ? `${t.borderWidth}px solid ${t.border}` : undefined,
+                            }}>
+                              <div style={{
+                                width: 22, height: 22, borderRadius: t.radius,
+                                background: color, border: `${t.borderWidth}px solid ${color}44`,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontFamily: t.font, fontSize: 11, fontWeight: 800, color, flexShrink: 0,
+                              }}>{f.wicket}</div>
                               <span style={{ flex: 1, fontFamily: t.fontSans, fontSize: 13, color: t.text }}>{f.name}</span>
-                              <span style={{ fontFamily: t.font, fontSize: 13, fontWeight: 700, color: t.text }}>{f.score}</span>
-                              <span style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted, width: 36, textAlign: "right" }}>{f.overStr} ov</span>
+                              <span style={{ fontFamily: t.font, fontSize: 14, fontWeight: 800, color: t.text }}>{f.score}</span>
+                              <span style={{ fontFamily: t.font, fontSize: 11, color: t.textMuted, width: 40, textAlign: "right" }}>{f.overStr} ov</span>
                             </div>
                           ))}
                         </>
@@ -638,7 +824,10 @@ export function Scorecard({ matchId }: { matchId: string }) {
               if (bowlersByTeam.length === 0) return null;
 
               return (
-                <div key={inIdx} onClick={() => setSelectedInnings(realIdx)} style={{ border: `${t.borderWidth}px solid ${battingColor}`, borderRadius: t.radiusLg, overflow: "hidden", cursor: "pointer" }}>
+                <div key={inIdx} onClick={() => setSelectedInnings(realIdx)} style={{
+                  border: `${t.borderWidth}px solid ${battingColor}`,
+                  borderRadius: t.radiusLg, overflow: "hidden", cursor: "pointer",
+                }}>
                   <InningsCardHeader color={battingColor} logo={battingTeam?.logo ?? "shield"} teamName={inn.battingTeamName} wickets={inn.wickets} runs={inn.runs} inningsNum={inIdx + 1} />
                   <BowlerScoreCard
                     color={battingColor}

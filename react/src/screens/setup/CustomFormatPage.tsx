@@ -37,20 +37,23 @@ export const CustomFormatPage = ({
           const isActive = activePreset === preset.name;
           return (
             <button key={preset.name} onClick={() => { setConfig(preset.config); setActivePreset(preset.name); }} style={{
-              background: t.card,
+              background: isActive ? t.primaryLight : t.card,
               border: `${t.borderWidth}px solid ${isActive ? t.primary : t.border}`,
               borderRadius: t.radius, padding: "12px 8px",
               cursor: "pointer", display: "flex", flexDirection: "column",
               alignItems: "center", gap: 6,
+              boxShadow: isActive ? `0 0 10px ${t.primary}18` : "none",
+              transition: t.transition,
             }}>
               {preset.img
-                ? <img src={preset.img} style={{ width: 20, height: 20, opacity: isActive ? 1 : 0.5 }} />
+                ? <img src={preset.img} style={{ width: 20, height: 20, opacity: isActive ? 1 : 0.45 }} />
                 : <PresetIcon size={20} color={isActive ? t.primary : t.textMuted} fill={isActive ? t.primary : t.textMuted} />
               }
               <span style={{
-                fontFamily: t.fontSans, fontSize: 11, fontWeight: 700,
+                fontFamily: t.fontDisplay, fontSize: 11, fontWeight: 600,
                 color: isActive ? t.primary : t.textDim,
                 textAlign: "center", lineHeight: 1.2,
+                textTransform: "uppercase", letterSpacing: 0.5,
               }}>{preset.name}</span>
             </button>
           );
@@ -60,28 +63,35 @@ export const CustomFormatPage = ({
       {/* Config card */}
       <div style={{
         background: t.card, border: `${t.borderWidth}px solid ${t.border}`,
-        borderRadius: t.radiusLg, padding: t.cardPadding,
-        boxShadow: "none",
+        borderRadius: t.radius, overflow: "hidden",
       }}>
         {configItems.map((item: any, idx: number) => (
           <div key={item.key}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0" }}>
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "12px 14px",
+              background: idx % 2 === 0 ? t.card : t.bgAlt,
+            }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontFamily: t.fontSans, fontSize: 14, color: t.text }}>{item.label}</span>
+                <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.text }}>{item.label}</span>
                 {item.desc && <div style={{ fontFamily: t.fontSans, fontSize: 11, color: t.textMuted, marginTop: 2 }}>{item.desc}</div>}
               </div>
               <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                 {item.options.map((opt: number) => {
                   const label = opt === 0 && item.zeroLabel ? item.zeroLabel : opt;
                   const isWide = typeof label === "string" && label.length > 2;
+                  const isSelected = opt === item.value;
                   return (
                     <button key={opt} onClick={() => { setConfig({ ...config, [item.key]: opt }); setActivePreset(null); setCustomInput(null); }} style={{
                       minWidth: 36, height: 36, borderRadius: t.btnRadius,
                       padding: isWide ? "0 10px" : 0,
-                      border: `${t.borderWidth}px solid ${opt === item.value ? t.primary : t.border}`,
-                      background: opt === item.value ? t.primary + "1a" : "transparent",
-                      color: opt === item.value ? t.primary : t.textDim,
-                      fontFamily: isWide ? t.fontSans : t.font, fontSize: isWide ? 11 : 14, fontWeight: 700, cursor: "pointer",
+                      border: `${t.borderWidth}px solid ${isSelected ? t.primary : t.borderBright}`,
+                      background: isSelected ? t.primaryLight : t.bgAlt,
+                      color: isSelected ? t.primary : t.textDim,
+                      fontFamily: isWide ? t.fontSans : t.font, fontSize: isWide ? 11 : 14, fontWeight: 700,
+                      cursor: "pointer",
+                      boxShadow: isSelected ? `0 0 8px ${t.primary}18` : "none",
+                      transition: t.transition,
                     }}>{label}</button>
                   );
                 })}
@@ -101,7 +111,7 @@ export const CustomFormatPage = ({
                     }}
                     style={{
                       width: 48, height: 36, borderRadius: t.btnRadius,
-                      border: `${t.borderWidth}px solid ${t.primary}`, background: t.primary + "1a",
+                      border: `${t.borderWidth}px solid ${t.primary}`, background: t.primaryLight,
                       color: t.primary, fontFamily: t.font, fontSize: 14, fontWeight: 700,
                       textAlign: "center", outline: "none",
                     }}
@@ -109,8 +119,8 @@ export const CustomFormatPage = ({
                 ) : (
                   <button onClick={() => setCustomInput(item.key)} style={{
                     minWidth: 36, height: 36, borderRadius: t.btnRadius,
-                    border: `${t.borderWidth}px dashed ${!item.options.includes(item.value) ? t.primary : t.border}`,
-                    background: !item.options.includes(item.value) ? t.primary + "1a" : "transparent",
+                    border: `${t.borderWidth}px dashed ${!item.options.includes(item.value) ? t.primary : t.borderBright}`,
+                    background: !item.options.includes(item.value) ? t.primaryLight : "transparent",
                     color: !item.options.includes(item.value) ? t.primary : t.textMuted,
                     fontFamily: t.font, fontSize: 14, fontWeight: 700, cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -120,22 +130,27 @@ export const CustomFormatPage = ({
                 )}
               </div>
             </div>
-            {idx < configItems.length - 1 && <div style={{ height: 1, background: t.border }} />}
           </div>
         ))}
 
-        <div style={{ height: 1, background: t.border }} />
+        {/* Rule toggles */}
+        <div style={{ height: 1, background: t.borderBright }} />
         {ruleToggles.map((rule: any, idx: number) => (
           <div key={rule.key}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0" }}>
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "12px 14px",
+              background: idx % 2 === 0 ? t.card : t.bgAlt,
+            }}>
               <div style={{ flex: 1 }}>
-                <span style={{ fontFamily: t.fontSans, fontSize: 14, color: t.text }}>{rule.label}</span>
+                <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.text }}>{rule.label}</span>
                 <div style={{ fontFamily: t.fontSans, fontSize: 11, color: t.textMuted, marginTop: 2 }}>{rule.desc}</div>
               </div>
               <button onClick={() => { setConfig({ ...config, [rule.key]: !config[rule.key] }); setActivePreset(null); }} style={{
                 width: 44, height: 26, borderRadius: 13, border: "none",
-                background: config[rule.key] ? t.primary : t.cardAlt,
+                background: config[rule.key] ? t.primary : t.bgAlt,
                 cursor: "pointer", position: "relative", transition: "background 0.2s",
+                boxShadow: config[rule.key] ? `0 0 8px ${t.primary}33` : `inset 0 1px 3px rgba(0,0,0,0.4)`,
               }}>
                 <div style={{
                   width: 20, height: 20, borderRadius: "50%",
@@ -158,16 +173,18 @@ export const CustomFormatPage = ({
       {!activePreset && (
         <div style={{
           background: t.card, border: `${t.borderWidth}px solid ${t.border}`,
-          borderRadius: t.radiusLg, padding: t.cardPadding,
-          boxShadow: "none",
+          borderRadius: t.radius, padding: t.cardPadding,
         }}>
           {!showSaveInput ? (
             <button onClick={() => setShowSaveInput(true)} style={{
               width: "100%", background: "none", border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", gap: 10, padding: 0,
             }}>
-              <Save size={16} color={t.primary} />
-              <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.primary }}>
+              <Save size={16} color={t.accent} />
+              <span style={{
+                fontFamily: t.fontDisplay, fontSize: 14, fontWeight: 600,
+                color: t.accent, textTransform: "uppercase", letterSpacing: 0.8,
+              }}>
                 Save as new format
               </span>
             </button>
@@ -188,7 +205,7 @@ export const CustomFormatPage = ({
                 }}
                 style={{
                   flex: 1, height: 40, borderRadius: t.btnRadius,
-                  border: `${t.borderWidth}px solid ${t.primary}`, background: t.primary + "08",
+                  border: `${t.borderWidth}px solid ${t.accent}`, background: t.bgAlt,
                   color: t.text, fontFamily: t.fontSans, fontSize: 14,
                   padding: "0 12px", outline: "none",
                 }}
@@ -201,8 +218,9 @@ export const CustomFormatPage = ({
                 }
               }} style={{
                 height: 40, padding: "0 16px", borderRadius: t.btnRadius,
-                background: t.primary, border: "none", color: "#fff",
-                fontFamily: t.fontSans, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                background: t.accent, border: "none", color: "#fff",
+                fontFamily: t.fontDisplay, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", textTransform: "uppercase", letterSpacing: 0.5,
               }}>Save</button>
             </div>
           )}

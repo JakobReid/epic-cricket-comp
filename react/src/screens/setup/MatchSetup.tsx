@@ -90,7 +90,7 @@ export const MatchSetup = ({ onStart, onCancel }: { onStart: (matchId: string) =
   const isFirst = !isAdvanced && stepIdx === 0;
 
   const handleStart = () => {
-    // Convert drafts → typed Teams with real IDs
+    // Convert drafts -> typed Teams with real IDs
     const builtTeams: Team[] = teams.map((d, i) => draftToTeam(d, i));
     const teamByName = Object.fromEntries(builtTeams.map((t, i) => [teams[i].name, t]));
 
@@ -109,7 +109,10 @@ export const MatchSetup = ({ onStart, onCancel }: { onStart: (matchId: string) =
   };
 
   return (
-    <div style={{ padding: 16, paddingBottom: 24, maxWidth: 640, margin: "0 auto" }}>
+    <div style={{
+      padding: 16, paddingBottom: 24, maxWidth: 640, margin: "0 auto",
+      background: t.bg, minHeight: "100%",
+    }}>
       {!isAdvanced && (
         <StepIndicator
           steps={steps}
@@ -121,14 +124,21 @@ export const MatchSetup = ({ onStart, onCancel }: { onStart: (matchId: string) =
       )}
 
       {isAdvanced && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10, marginBottom: 20,
+          paddingBottom: 14, borderBottom: `1px solid ${t.border}`,
+        }}>
           <button onClick={() => setActiveSection("config")} style={{
-            background: "none", border: "none", cursor: "pointer", padding: 4,
+            background: t.card, border: `1px solid ${t.borderBright}`,
+            borderRadius: t.radius, cursor: "pointer", padding: "6px 8px",
             display: "flex", alignItems: "center",
           }}>
-            <ChevronRight size={20} color={t.textDim} style={{ transform: "rotate(180deg)" }} />
+            <ChevronRight size={18} color={t.textDim} style={{ transform: "rotate(180deg)" }} />
           </button>
-          <div style={{ fontFamily: t.fontSans, fontSize: 18, fontWeight: 800, color: t.text }}>Custom Format</div>
+          <div style={{
+            fontFamily: t.fontDisplay, fontSize: 20, fontWeight: 600,
+            color: t.text, textTransform: "uppercase", letterSpacing: 1,
+          }}>Custom Format</div>
         </div>
       )}
 

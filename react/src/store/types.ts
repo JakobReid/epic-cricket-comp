@@ -106,6 +106,7 @@ export interface InningsState {
   runs: number;
   wickets: number;
   extras: { wides: number; noBalls: number; byes: number; legByes: number };
+  overCompletedAt: string[]; // ISO timestamps indexed by over number (0-indexed)
   status: InningsStatus;
 }
 
@@ -149,6 +150,7 @@ export interface MatchStoreCtx {
   ) => string;
   startMatch: (matchId: string) => void;
   recordDelivery: (matchId: string, input: DeliveryInput) => void;
+  confirmOver: (matchId: string) => void;
   endMatch: (matchId: string) => void;
   nextInnings: (matchId: string) => void;
   undoDelivery: (matchId: string) => void;
