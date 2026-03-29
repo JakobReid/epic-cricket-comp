@@ -1,4 +1,5 @@
 import { useTheme } from "../../ThemeContext";
+import { CricketIcon } from "../../components/Shared";
 import { TeamLogo } from "../setup/TeamsPage";
 import ballLineal from "../../assets/criquet-icons/ball-lineal.png";
 import type { BowlerStats, BowlingTurn, Team } from "../../store/types";
@@ -42,7 +43,7 @@ export const BowlingSection = ({
         background: t.card,
         borderRadius: t.radiusLg,
         overflow: "hidden",
-        border: `1px solid ${color}`,
+        border: `2px solid ${color}`,
       }}>
         {/* Bowling team header */}
         <div style={{ background: color, padding: "8px 14px" }}>
@@ -52,7 +53,7 @@ export const BowlingSection = ({
               letterSpacing: 2, textTransform: "uppercase",
               display: "flex", alignItems: "center", gap: 5,
             }}>
-              <img src={ballLineal} style={{ width: 11, height: 11, filter: "brightness(0) invert(1)", opacity: 0.7 }} />
+              <CricketIcon src={ballLineal} color="#fff" size={11} opacity={0.7} />
               BOWLING
             </div>
             <div style={{

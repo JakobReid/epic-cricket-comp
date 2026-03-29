@@ -21,7 +21,7 @@ export const BatterScoreCard = ({ color, innings, teamHeader }: Props) => {
   return (
     <div style={{
       background: t.card,
-      border: `${t.borderWidth}px solid ${color}`,
+      border: `2px solid ${color}`,
       borderRadius: t.radiusLg,
       overflow: "hidden",
     }}>

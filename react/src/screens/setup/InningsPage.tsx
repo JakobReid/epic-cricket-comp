@@ -70,7 +70,7 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
             onDragEnd={onOuterDragEnd}
             onDragOver={e => e.preventDefault()}
             style={{
-              border: `${t.borderWidth}px solid ${isOuterTarget ? teamColor : t.border}`,
+              border: `2px solid ${teamColor}`,
               borderRadius: t.radius, overflow: "hidden",
               opacity: outerDragIdx.current === inningsIdx ? 0.4 : 1,
               transition: t.transition,
@@ -127,8 +127,7 @@ export const InningsPage = ({ config, battingOrder, setBattingOrder, bowlingOrde
                       borderTop: `${t.borderWidth}px solid ${isInnerTarget ? bowlerColor : t.border}`,
                       padding: "10px 14px",
                       display: "flex", alignItems: "center", gap: 10,
-                      background: bowlerIdx % 2 === 0 ? t.card : t.bgAlt,
-                      borderLeft: `3px solid ${bowlerColor}`,
+                      background: t.card,
                       opacity: innerDragIdx.current === bowlerIdx && innerDragOver?.innings === battingTeam.name ? 0.4 : 1,
                       cursor: "grab", userSelect: "none",
                       transition: t.transition,

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, X, Shield, Star, Zap, Flame, Crown, Trophy, Swords, Rocket, type LucideIcon } from "lucide-react";
 import { useTheme } from "../../ThemeContext";
+import { CricketIcon } from "../../components/Shared";
 
 export const TEAM_COLORS = [
   "#2196F3", "#8E24AA", "#43A047", "#FB8C00",
@@ -22,13 +23,7 @@ export const TEAM_LOGOS: { key: string; icon?: LucideIcon; img?: string }[] = [
 export function TeamLogo({ logoKey, color, size = 20 }: { logoKey: string; color: string; size?: number }) {
   const entry = TEAM_LOGOS.find(l => l.key === logoKey) ?? TEAM_LOGOS[0];
   if (entry.img) {
-    const isWhite = color === "#fff" || color === "white" || color.startsWith("rgba(255,255,255");
-    return (
-      <img
-        src={entry.img}
-        style={{ width: size, height: size, filter: isWhite ? "brightness(0) invert(1)" : undefined, opacity: isWhite ? 0.85 : 1 }}
-      />
-    );
+    return <CricketIcon src={entry.img} color={color} size={size} />;
   }
   const Icon = entry.icon!;
   return <Icon size={size} color={color} fill={color} strokeWidth={0} />;
@@ -79,7 +74,7 @@ export const TeamsPage = ({ teams, config, onChange }: Props) => {
 
         return (
           <div key={i} style={{
-            border: `${t.borderWidth}px solid ${t.border}`,
+            border: `2px solid ${team.color}`,
             borderRadius: t.radius, overflow: "hidden",
             background: t.card,
           }}>

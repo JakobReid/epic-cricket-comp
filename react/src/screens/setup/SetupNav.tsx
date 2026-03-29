@@ -35,7 +35,7 @@ export const SetupNav = ({ isAdvanced, isFirst, isLast, stepIdx, steps, onStart,
     fontFamily: t.fontDisplay, fontSize: 18, fontWeight: 700,
     cursor: "pointer", letterSpacing: 1.5, textTransform: "uppercase" as const,
     display: "flex" as const, alignItems: "center" as const, justifyContent: "center" as const, gap: 8,
-    boxShadow: `0 0 20px ${t.primary}33, 0 4px 12px rgba(0,0,0,0.3)`,
+    boxShadow: "none",
     transition: t.transition,
   };
 

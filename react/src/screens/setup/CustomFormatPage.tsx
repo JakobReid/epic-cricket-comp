@@ -1,5 +1,6 @@
 import { Plus, Check, Save, Star } from "lucide-react";
 import { useTheme } from "../../ThemeContext";
+import { CricketIcon } from "../../components/Shared";
 
 export const CustomFormatPage = ({
   config, setConfig, activePreset, setActivePreset,
@@ -46,7 +47,7 @@ export const CustomFormatPage = ({
               transition: t.transition,
             }}>
               {preset.img
-                ? <img src={preset.img} style={{ width: 20, height: 20, opacity: isActive ? 1 : 0.45 }} />
+                ? <CricketIcon src={preset.img} color={isActive ? t.primary : t.textMuted} size={20} opacity={isActive ? 1 : 0.45} />
                 : <PresetIcon size={20} color={isActive ? t.primary : t.textMuted} fill={isActive ? t.primary : t.textMuted} />
               }
               <span style={{
@@ -70,7 +71,7 @@ export const CustomFormatPage = ({
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               padding: "12px 14px",
-              background: idx % 2 === 0 ? t.card : t.bgAlt,
+              background: t.card,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.text }}>{item.label}</span>
@@ -140,7 +141,7 @@ export const CustomFormatPage = ({
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               padding: "12px 14px",
-              background: idx % 2 === 0 ? t.card : t.bgAlt,
+              background: t.card,
             }}>
               <div style={{ flex: 1 }}>
                 <span style={{ fontFamily: t.fontSans, fontSize: 14, fontWeight: 600, color: t.text }}>{rule.label}</span>

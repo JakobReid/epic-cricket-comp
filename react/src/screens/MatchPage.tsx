@@ -100,6 +100,32 @@ export function MatchPage({ matchId, onBack }: { matchId: string; onBack: () => 
                   </div>
                 </>
               )}
+              {nextBattingInnings && (() => {
+                const nextBatTeam = match.teams.find(tm => tm.id === nextBattingInnings.battingTeamId);
+                return nextBatTeam ? (
+                  <>
+                    <span style={{ width: 1, height: 14, background: t.border, display: "inline-block" }} />
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ fontFamily: t.font, fontSize: 9, color: t.textMuted, whiteSpace: "nowrap", letterSpacing: 1.5, textTransform: "uppercase" }}>NEXT BAT</span>
+                      <TeamLogo logoKey={nextBatTeam.logo ?? "shield"} color={nextBatTeam.color ?? t.textMuted} size={11} />
+                      <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 700, color: nextBatTeam.color ?? t.text, whiteSpace: "nowrap" }}>{nextBatTeam.name}</span>
+                    </div>
+                  </>
+                ) : null;
+              })()}
+              {nextBowlingTurn && (() => {
+                const nextBowlTeam = match.teams.find(tm => tm.id === nextBowlingTurn.teamId);
+                return nextBowlTeam ? (
+                  <>
+                    <span style={{ width: 1, height: 14, background: t.border, display: "inline-block" }} />
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ fontFamily: t.font, fontSize: 9, color: t.textMuted, whiteSpace: "nowrap", letterSpacing: 1.5, textTransform: "uppercase" }}>NEXT BOWL</span>
+                      <TeamLogo logoKey={nextBowlTeam.logo ?? "shield"} color={nextBowlTeam.color ?? t.textMuted} size={11} />
+                      <span style={{ fontFamily: t.fontSans, fontSize: 11, fontWeight: 700, color: nextBowlTeam.color ?? t.text, whiteSpace: "nowrap" }}>{nextBowlTeam.name}</span>
+                    </div>
+                  </>
+                ) : null;
+              })()}
             </div>
 
             <button
@@ -114,7 +140,7 @@ export function MatchPage({ matchId, onBack }: { matchId: string; onBack: () => 
               }}
             >
               <BarChart2 size={13} color="#fff" />
-              Score
+              Scorecard
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTheme } from "../ThemeContext";
+import { CricketIcon } from "./Shared";
 import fieldLineal from "../assets/criquet-icons/field-lineal.png";
 
 interface NavBarProps {
@@ -25,14 +26,7 @@ export const EccBrand = ({ onHome, color }: { onHome: () => void; color?: string
         background: isLight ? "rgba(255,255,255,0.15)" : `${t.primary}12`,
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
-        <img
-          src={fieldLineal}
-          style={{
-            width: 16, height: 16,
-            filter: isLight ? "brightness(0) invert(1)" : "none",
-            opacity: 0.85,
-          }}
-        />
+        <CricketIcon src={fieldLineal} color={isLight ? "#fff" : t.primary} size={16} opacity={0.85} />
       </div>
       <span
         style={{

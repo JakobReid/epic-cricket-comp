@@ -1,6 +1,6 @@
 import { TrendingUp } from "lucide-react";
 import { useTheme } from "../../ThemeContext";
-import { LifeIndicator } from "../../components/Shared";
+import { LifeIndicator, CricketIcon } from "../../components/Shared";
 import { TeamLogo } from "../setup/TeamsPage";
 import batLineal from "../../assets/criquet-icons/bat-lineal.png";
 import type { BatterState } from "../../store/types";
@@ -34,7 +34,7 @@ export const BattingSection = ({
         background: t.card,
         borderRadius: t.radiusLg,
         overflow: "hidden",
-        border: `1px solid ${color}`,
+        border: `2px solid ${color}`,
       }}>
         {/* Team header */}
         <div style={{ background: color, padding: "10px 14px 8px" }}>
@@ -45,7 +45,7 @@ export const BattingSection = ({
               letterSpacing: 2, textTransform: "uppercase",
               display: "flex", alignItems: "center", gap: 5,
             }}>
-              <img src={batLineal} style={{ width: 11, height: 11, filter: "brightness(0) invert(1)", opacity: 0.7 }} />
+              <CricketIcon src={batLineal} color="#fff" size={11} opacity={0.7} />
               BATTING
             </div>
             <div style={{

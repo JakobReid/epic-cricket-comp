@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Settings, Users, ChevronRight } from "lucide-react";
 import { useTheme } from "../../ThemeContext";
 import batLineal from "../../assets/criquet-icons/bat-lineal.png";
+import { CricketIcon } from "../../components/Shared";
 import { FORMAT_PRESETS } from "./formatPresets";
 import { StepIndicator } from "./StepIndicator";
 import { FormatPage } from "./FormatPage";
@@ -13,7 +14,7 @@ import { useMatchStore } from "../../store/matchStore";
 import type { Team, Player, FormatConfig } from "../../store/types";
 
 const BatStepIcon = ({ size, color }: { size: number; color: string }) => (
-  <img src={batLineal} style={{ width: size, height: size, filter: color === "#fff" ? "brightness(0) invert(1)" : undefined }} />
+  <CricketIcon src={batLineal} color={color} size={size} />
 );
 
 const DEFAULT_TEAMS: TeamDraft[] = [

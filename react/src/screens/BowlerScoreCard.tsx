@@ -74,7 +74,7 @@ export const BowlerScoreCard = ({ color, bowlers, standalone = false }: Props) =
   if (standalone) {
     return (
       <div style={{
-        background: t.card, border: `${t.borderWidth}px solid ${color}`,
+        background: t.card, border: `2px solid ${color}`,
         borderRadius: t.radiusLg, overflow: "hidden",
       }}>
         {content}

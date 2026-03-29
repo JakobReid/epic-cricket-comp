@@ -107,6 +107,27 @@ export const LifeIndicator = ({ total, remaining, color }: any) => {
   );
 };
 
+/** Renders a PNG icon tinted to any colour via CSS mask-image. */
+export const CricketIcon = ({ src, color, size, opacity = 1, style = {} }: {
+  src: string; color: string; size: number; opacity?: number; style?: React.CSSProperties;
+}) => (
+  <div style={{
+    width: size, height: size,
+    backgroundColor: color,
+    WebkitMaskImage: `url(${src})`,
+    maskImage: `url(${src})`,
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+    opacity,
+    flexShrink: 0,
+    ...style,
+  }} />
+);
+
 export const IconBtn = ({ icon: Icon, size = 16, color, style = {}, onClick }: any) => {
   const t = useTheme();
   return (

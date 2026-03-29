@@ -1,5 +1,6 @@
 import { ChevronRight, Settings, Check } from "lucide-react";
 import { useTheme } from "../../ThemeContext";
+import { CricketIcon } from "../../components/Shared";
 
 export const FormatPage = ({ allPresets, activePreset, setConfig, setActivePreset, setActiveSection }: any) => {
   const t = useTheme();
@@ -18,6 +19,7 @@ export const FormatPage = ({ allPresets, activePreset, setConfig, setActivePrese
           overflow: "hidden",
           boxShadow: isActive ? `0 0 12px ${t.primary}22, inset 0 0 20px ${t.primary}08` : "none",
           transition: t.transition,
+          outline: "none",
         }}>
           {/* Left accent strip */}
           <div style={{
@@ -37,7 +39,7 @@ export const FormatPage = ({ allPresets, activePreset, setConfig, setActivePrese
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
               {preset.img
-                ? <img src={preset.img} style={{ width: 24, height: 24, opacity: isActive ? 1 : 0.45 }} />
+                ? <CricketIcon src={preset.img} color={isActive ? t.primary : t.textMuted} size={24} opacity={isActive ? 1 : 0.45} />
                 : <PresetIcon size={18} color={isActive ? t.primary : t.textMuted} fill={isActive ? t.primary : t.textMuted} />
               }
             </div>
@@ -98,7 +100,7 @@ export const FormatPage = ({ allPresets, activePreset, setConfig, setActivePrese
       border: `${t.borderWidth}px dashed ${t.textMuted}`,
       borderRadius: t.radius, padding: "14px 16px",
       cursor: "pointer", display: "flex", alignItems: "center", gap: 14,
-      transition: t.transition,
+      transition: t.transition, outline: "none",
     }}>
       <div style={{
         width: 42, height: 42, borderRadius: t.radius,
