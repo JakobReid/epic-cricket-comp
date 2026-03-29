@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "wsl",
+      "runtimeArgs": ["-d", "Ubuntu-24.04", "bash", "-ic", "cd /home/jreid/ecc-prototype/react && npm run dev -- --host"],
+      "port": 5173
+    }
+  ]
+}
